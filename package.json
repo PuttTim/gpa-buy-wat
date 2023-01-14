@@ -12,6 +12,8 @@
     "@chakra-ui/react": "^2.4.8",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@fontsource/dm-sans": "^4.5.9",
+    "@fontsource/poppins": "^4.5.10",
     "framer-motion": "^8.4.3",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",

@@ -1,16 +1,15 @@
 import React from "react"
+import { Box } from "@chakra-ui/react"
 import { Route, Routes } from "react-router-dom"
 import Calculator from "./pages/Calculator"
 
 const App = () => {
     return (
-        <>
-            <div className="max-w-[1500px] m-auto">
-                <Routes>
-                    <Route path="/" element={<Calculator />} />
-                </Routes>
-            </div>
-        </>
+        <Box maxW="1500px" m="auto" px="16px">
+            <Routes>
+                <Route path="/" element={<Calculator />} />
+            </Routes>
+        </Box>
     )
 }
 
