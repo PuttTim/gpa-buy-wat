@@ -1,5 +1,5 @@
 export enum UniGrade {
-    "A+" = 5 ,
+    "A+" = 5,
     "A" = 5,
     "A-" = 4.5,
     "B+" = 4,
