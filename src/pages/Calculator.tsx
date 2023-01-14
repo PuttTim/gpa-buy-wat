@@ -1,5 +1,9 @@
 import {
     Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
     Box,
     Button,
     Card,
@@ -79,7 +83,34 @@ const Calculator = () => {
                     </NumberInputStepper>
                 </NumberInput>
             </HStack>
-
+            <Heading pt="16px">Calculate GPA</Heading>
+            <Card
+                w="100%"
+                p="16px"
+                bg="customGrey.100"
+                borderColor="customGrey.900"
+                variant="outline">
+                <Accordion allowMultiple>
+                    <AccordionItem border="none">
+                        <>
+                            <AccordionButton
+                                bg="customIndigo.150"
+                                borderRadius={8}
+                                _hover={{ bg: "customIndigo.250" }}>
+                                <Box as="span" flex="1" textAlign="left">
+                                    Section 2 title
+                                </Box>
+                                <AccordionIcon />
+                            </AccordionButton>
+                        </>{" "}
+                        <AccordionPanel bg="customGrey.100">
+                            <Box w="200px" h="500px">
+                                AAAAAa
+                            </Box>
+                        </AccordionPanel>
+                    </AccordionItem>
+                </Accordion>
+            </Card>
             <Input placeholder={"Gibe GPA"} />
             <Button
                 bg="hsla(234, 89%, 74%,0.25)"

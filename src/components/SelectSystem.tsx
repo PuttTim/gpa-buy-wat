@@ -19,10 +19,16 @@ interface SelectSystemProps {
 export const SelectSystem = (props: SelectSystemProps) => {
     const selectedTabSx = {
         color: "customWhite.100",
-        bgColor: "customIndigo.250",
+        borderColor: "customIndigo.500",
+        bgColor: "customIndigo.500",
     }
 
     const activeTabSx = {
+        bg: "customIndigo.250",
+        borderColor: "customIndigo.250",
+    }
+
+    const hoverTabSx = {
         bg: "customIndigo.500",
         borderColor: "customIndigo.500",
     }
@@ -58,6 +64,7 @@ export const SelectSystem = (props: SelectSystemProps) => {
                     <Tab
                         {...tabSx}
                         _selected={selectedTabSx}
+                        _hover={hoverTabSx}
                         _active={activeTabSx}>
                         NUS
                     </Tab>
@@ -70,6 +77,7 @@ export const SelectSystem = (props: SelectSystemProps) => {
                     <Tab
                         {...tabSx}
                         _selected={selectedTabSx}
+                        _hover={hoverTabSx}
                         _active={activeTabSx}>
                         NTU
                     </Tab>
@@ -82,6 +90,7 @@ export const SelectSystem = (props: SelectSystemProps) => {
                     <Tab
                         {...tabSx}
                         _selected={selectedTabSx}
+                        _hover={hoverTabSx}
                         _active={activeTabSx}>
                         Poly
                     </Tab>
