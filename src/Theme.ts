@@ -31,11 +31,25 @@ const theme: ThemeConfig = extendTheme({
         red: {
             400: "#FF5959",
         },
+        customGrey: {
+            100: "#1f1f1f",
+            500: "#282828",
+            900: "#343434",
+        },
+        customWhite: {
+            100: "#e6e6e6",
+        },
+        customIndigo: {
+            150: "#2e2f40",
+            250: "#3e425d",
+            500: "#545a91",
+        },
     },
     components: {
         Input: {
             defaultProps: {
                 variant: "filled",
+                focusBorderColor: "customIndigo.500",
             },
         },
         Heading: {
@@ -43,7 +57,6 @@ const theme: ThemeConfig = extendTheme({
                 fontWeight: "semibold",
             },
         },
-       
     },
 })
 
