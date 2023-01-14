@@ -1,9 +1,19 @@
-import { Button, Heading, Input } from "@chakra-ui/react"
+import { Box, Button, Heading, Input, VStack } from "@chakra-ui/react"
+import { useEffect, useState } from "react"
+import { SelectSystem } from "../components/SelectSystem"
 
 const Calculator = () => {
+    const [systemIndex, setSystemIndex] = useState(0)
+
+    useEffect(() => {
+        console.log(systemIndex)
+    }, [systemIndex])
+
     return (
-        <>
-            <Input placeholder="Hello gimme gpa" />
+        <VStack spacing="24px" align="start">
+            <Heading>Select Grading System</Heading>
+            <SelectSystem setIndex={setSystemIndex} />
+            <Input placeholder={"Gibe GPA"} />
             <Heading>Bruh</Heading>
             <Button
                 bg="hsla(234, 89%, 74%,0.25)"
@@ -11,7 +21,7 @@ const Calculator = () => {
                 _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}>
                 NUS
             </Button>
-        </>
+        </VStack>
     )
 }
 
