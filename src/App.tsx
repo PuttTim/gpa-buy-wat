@@ -11,7 +11,7 @@ const App = () => {
                     <Heading>GPA buy wat?</Heading>
                 </Center>
             </Box>
-            <Box maxW="1500px" m="auto" px="16px">
+            <Box maxW="1400px" m="auto" px="16px">
                 <Routes>
                     <Route path="/" element={<Calculator />} />
                 </Routes>

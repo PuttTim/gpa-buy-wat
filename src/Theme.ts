@@ -52,6 +52,12 @@ const theme: ThemeConfig = extendTheme({
                 focusBorderColor: "customIndigo.500",
             },
         },
+        NumberInput: {
+            defaultProps: {
+                variant: "filled",
+                focusBorderColor: "customIndigo.500",
+            },
+        },
         Heading: {
             baseStyle: {
                 fontWeight: "semibold",
