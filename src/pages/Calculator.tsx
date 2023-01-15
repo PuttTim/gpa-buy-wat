@@ -7,15 +7,18 @@ import {
     Box,
     Button,
     Card,
-    Center, Heading,
-    HStack, IconButton,
-    Input, NumberDecrementStepper,
+    Center,
+    Heading,
+    HStack,
+    IconButton,
+    Input,
+    NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
     Select,
-    VStack
+    VStack,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
@@ -36,44 +39,13 @@ const Calculator = () => {
                 name: "Semester 1",
                 modules: [
                     {
-                        name: undefined,
+                        name: "Hello",
                         credits: 0,
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
                     {
-                        name: undefined,
-                        credits: 4,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 5,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                ],
-            },
-            
-            {
-                name: "Semester 2",
-                modules: [
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
+                        name: "Work",
+                        credits: 0,
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
                 ],
@@ -116,9 +88,7 @@ const Calculator = () => {
 
     useEffect(() => {
         console.log(calculationData, "calculationData")
-
         // console.log(systemIndex, "systemIndex")
-
         // console.log(Object.keys(UniGrade))
         // console.log(Object.values(UniGrade))
     }, [systemIndex, calculationData])
@@ -128,83 +98,70 @@ const Calculator = () => {
         groupIndex: number,
         moduleIndex: number,
     ) => {
-        setCalculationData({
-            ...calculationData,
-            groups: calculationData.groups.map((group, index) => {
-                if (index === groupIndex) {
-                    return {
-                        ...group,
-                        modules: group.modules.map((module, index) => {
-                            if (index === moduleIndex) {
-                                return {
-                                    ...module,
-                                    grade: getGradeFromPoints(points),
-                                }
-                            }
-                            return module
-                        }),
-                    }
-                }
-                return group
-            }),
-        })
+        // console.log(points, groupIndex, moduleIndex)
+        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
+
+        calculationData_copy.groups[groupIndex].modules[moduleIndex].grade =
+            points
+
+        setCalculationData(calculationData_copy)
     }
 
-    const getGradeFromPoints = (points: string) => {
-        if (systemIndex === 2) {
-            switch (points) {
-                case "A":
-                    return PolyGrade.A
-                case "B+":
-                    return PolyGrade["B+"]
-                case "B":
-                    return PolyGrade.B
-                case "C+":
-                    return PolyGrade["C+"]
-                case "C":
-                    return PolyGrade.C
-                case "D+":
-                    return PolyGrade["D+"]
-                case "D":
-                    return PolyGrade.D
-                case "D-":
-                    return PolyGrade["D-"]
-                case "F":
-                    return PolyGrade.F
-                default:
-                    return PolyGrade.A
-            }
-        } else {
-            switch (points) {
-                case "A+":
-                    return UniGrade["A+"]
-                case "A":
-                    return UniGrade.A
-                case "A-":
-                    return UniGrade["A-"]
-                case "B+":
-                    return UniGrade["B+"]
-                case "B":
-                    return UniGrade.B
-                case "B-":
-                    return UniGrade["B-"]
-                case "C+":
-                    return UniGrade["C+"]
-                case "C":
-                    return UniGrade.C
-                case "C-":
-                    return UniGrade["C-"]
-                case "D+":
-                    return UniGrade["D+"]
-                case "D":
-                    return UniGrade.D
-                case "F":
-                    return UniGrade.F
-                default:
-                    return UniGrade.A
-            }
-        }
-    }
+    // const getGradeFromPoints = (points: string) => {
+    //     if (systemIndex === 2) {
+    //         switch (points) {
+    //             case "4":
+    //                 return PolyGrade.A
+    //             case "3.5":
+    //                 return PolyGrade["B+"]
+    //             case "3":
+    //                 return PolyGrade.B
+    //             case "2.5":
+    //                 return PolyGrade["C+"]
+    //             case "2":
+    //                 return PolyGrade.C
+    //             case "1.5":
+    //                 return PolyGrade["D+"]
+    //             case "1.0":
+    //                 return PolyGrade.D
+    //             case "0.5":
+    //                 return PolyGrade["D-"]
+    //             case "F":
+    //                 return PolyGrade.F
+    //             default:
+    //                 return PolyGrade.A
+    //         }
+    //     } else {
+    //         switch (points) {
+    //             case "A+":
+    //                 return UniGrade["A+"]
+    //             case "A":
+    //                 return UniGrade.A
+    //             case "A-":
+    //                 return UniGrade["A-"]
+    //             case "B+":
+    //                 return UniGrade["B+"]
+    //             case "B":
+    //                 return UniGrade.B
+    //             case "B-":
+    //                 return UniGrade["B-"]
+    //             case "C+":
+    //                 return UniGrade["C+"]
+    //             case "C":
+    //                 return UniGrade.C
+    //             case "C-":
+    //                 return UniGrade["C-"]
+    //             case "D+":
+    //                 return UniGrade["D+"]
+    //             case "D":
+    //                 return UniGrade.D
+    //             case "F":
+    //                 return UniGrade.F
+    //             default:
+    //                 return UniGrade.A
+    //         }
+    //     }
+    // }
 
     useEffect(() => {
         setGpa(calculateCumulativeGPA(calculationData.groups))
