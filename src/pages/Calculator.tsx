@@ -72,21 +72,21 @@ const Calculator = () => {
         name: "Enter Module Name",
     }
 
-    const calculateTotalCredits = (groups: Group[]) => {
-        return groups.reduce((prev, group) => {
+    const calculateTotalCredits = (calculationData: CalculationData) => {
+        return calculationData.groups.reduce((prev, group) => {
             return (
                 group.modules.reduce(
                     (prev, module) => module.credits + prev,
                     0,
                 ) + prev
             )
-        }, 0)
+        }, calculationData.totalCredits)
     }
 
-    const calculateCumulativeGPA = (groups: Group[]) => {
-        let totalCredits = 0
-        let totalGrade = 0
-        groups.forEach(group => {
+    const calculateCumulativeGPA = (calculationData: CalculationData) => {
+        let totalCredits = calculationData.totalCredits
+        let totalGrade = calculationData.currentGPA * calculationData.totalCredits
+        calculationData.groups.forEach(group => {
             group.modules.forEach(module => {
                 totalCredits += module.credits
                 totalGrade += parseFloat(module.grade) * module.credits
@@ -208,8 +208,8 @@ const Calculator = () => {
     }
 
     useEffect(() => {
-        setResultGPA(calculateCumulativeGPA(calculationData.groups))
-        setResultTotalCredits(calculateTotalCredits(calculationData.groups))
+        setResultGPA(calculateCumulativeGPA(calculationData))
+        setResultTotalCredits(calculateTotalCredits(calculationData))
         setResultFood(calculateFood(resultGPA))
     }, [calculationData, systemIndex])
 
@@ -227,6 +227,7 @@ const Calculator = () => {
                     w="50%"
                     placeholder="Current GPA"
                     type="number"
+                    value={calculationData.currentGPA || ""}
                     onChange={e => {
                         setCalculationData({
                             ...calculationData,
@@ -238,6 +239,7 @@ const Calculator = () => {
                 />
                 <NumberInput
                     w="50%"
+                    value={calculationData.totalCredits || ""}
                     onChange={newValue => {
                         setCalculationData({
                             ...calculationData,
