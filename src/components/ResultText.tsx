@@ -3,7 +3,7 @@ import React from "react"
 
 interface ResultTextProps {
     header: string
-    text: string | GLfloat | number
+    text: string
 }
 
 export const ResultText = (props: ResultTextProps) => {
@@ -11,7 +11,9 @@ export const ResultText = (props: ResultTextProps) => {
         <HStack align="center">
             <Heading>{props.header}</Heading>
             <Text fontSize="3xl" fontWeight="medium">
-                {props.text}
+                {props.header === "Your GPA: "
+                    ? parseInt(props.text).toFixed(2)
+                    : props.text}
             </Text>
         </HStack>
     )

@@ -273,7 +273,9 @@ const Calculator = () => {
                                         <Heading
                                             fontSize="2xl"
                                             fontWeight="medium">
-                                            3.95
+                                            {calculateGPAPerGroup(
+                                                group,
+                                            ).toFixed(2)}
                                         </Heading>
                                         <AccordionIcon />
                                     </Center>
@@ -388,8 +390,11 @@ const Calculator = () => {
                     ))}
                 </Accordion>
             </Card>
-            <ResultText header="Your GPA: " text={resultGPA} />
-            <ResultText header="Total Credits: " text={resultTotalCredits} />
+            <ResultText header="Your GPA: " text={resultGPA.toString()} />
+            <ResultText
+                header="Total Credits: "
+                text={resultTotalCredits.toString()}
+            />
             <ResultText header="You can buy " text={resultFood} />
             <Input placeholder={"Gibe GPA"} />
             <Button
