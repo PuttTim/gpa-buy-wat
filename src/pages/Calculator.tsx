@@ -22,9 +22,12 @@ import { Edit3, Trash2 } from "react-feather"
 import { SelectSystem } from "../components/SelectSystem"
 import { CalculationData } from "../interfaces/CalculationData"
 import { PolyGrade, UniGrade } from "../interfaces/Grade"
+import { Group } from "../interfaces/Group"
 
 const Calculator = () => {
     const [systemIndex, setSystemIndex] = useState(0)
+    const [gpa, setGpa] = useState(0)
+    const [totalCredits, setTotalCredits] = useState(0)
     const [calculationData, setCalculationData] = useState<CalculationData>({
         currentGPA: 0,
         totalCredits: 0,
@@ -37,8 +40,19 @@ const Calculator = () => {
                         credits: 0,
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
+                    {
+                        name: undefined,
+                        credits: 4,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 5,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
                 ],
             },
+            
             {
                 name: "Semester 2",
                 modules: [
@@ -66,6 +80,39 @@ const Calculator = () => {
             },
         ],
     })
+
+    const calculateTotalCredits = (groups: Group[]) => {
+        return groups.reduce((prev, group) => {
+            return (
+                group.modules.reduce(
+                    (prev, module) => module.credits + prev,
+                    0,
+                ) + prev
+            )
+        }, 0)
+    }
+
+    const calculateCumulativeGPA = (groups: Group[]) => {
+        let totalCredits = 0
+        let totalGrade = 0
+        groups.forEach(group => {
+            group.modules.forEach(module => {
+                totalCredits += module.credits
+                totalGrade += parseFloat(module.grade) * module.credits
+            })
+        })
+        return totalGrade / totalCredits
+    }
+
+    const calculateGPAPerGroup = (group: Group) => {
+        let totalCredits = 0
+        let totalGrade = 0
+        group.modules.forEach(module => {
+            totalCredits += module.credits
+            totalGrade += parseFloat(module.grade) * module.credits
+        })
+        return totalGrade / totalCredits
+    }
 
     useEffect(() => {
         console.log(calculationData, "calculationData")
@@ -158,6 +205,11 @@ const Calculator = () => {
             }
         }
     }
+
+    useEffect(() => {
+        setGpa(calculateCumulativeGPA(calculationData.groups))
+        setTotalCredits(calculateTotalCredits(calculationData.groups))
+    }, [calculationData, systemIndex])
 
     return (
         <VStack spacing="16px" align="start">
