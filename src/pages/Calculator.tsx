@@ -202,8 +202,11 @@ const Calculator = () => {
     useEffect(() => {
         setResultGPA(calculateCumulativeGPA(calculationData))
         setResultTotalCredits(calculateTotalCredits(calculationData))
-        setResultFood(calculateFood(resultGPA))
     }, [calculationData, systemIndex])
+
+    useEffect(() => {
+        setResultFood(calculateFood(resultGPA))
+    }, [resultGPA])
 
     return (
         <VStack spacing="16px" align="start">
