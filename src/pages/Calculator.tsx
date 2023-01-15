@@ -7,15 +7,28 @@ import {
     Box,
     Button,
     Card,
-    Center, Heading,
-    HStack, IconButton,
-    Input, NumberDecrementStepper,
+    Center,
+    FormControl,
+    FormLabel,
+    Heading,
+    HStack,
+    IconButton,
+    Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
     Select,
-    VStack
+    useDisclosure,
+    VStack,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
@@ -23,6 +36,7 @@ import { SelectSystem } from "../components/SelectSystem"
 import { CalculationData } from "../interfaces/CalculationData"
 import { PolyGrade, UniGrade } from "../interfaces/Grade"
 import { Group } from "../interfaces/Group"
+import { Module } from "../interfaces/Module"
 
 const Calculator = () => {
     const [systemIndex, setSystemIndex] = useState(0)
@@ -52,7 +66,7 @@ const Calculator = () => {
                     },
                 ],
             },
-            
+
             {
                 name: "Semester 2",
                 modules: [
@@ -80,6 +94,14 @@ const Calculator = () => {
             },
         ],
     })
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [groupName, setGroupName] = useState("")
+
+    const defaultModuleValues: Module = {
+        grade: systemIndex == 2 ? PolyGrade.A : UniGrade.A,
+        credits: 4,
+        name: "Enter Module Name",
+    }
 
     const calculateTotalCredits = (groups: Group[]) => {
         return groups.reduce((prev, group) => {
@@ -365,6 +387,35 @@ const Calculator = () => {
                                         </HStack>
                                     </Box>
                                 ))}
+
+                                <Button
+                                    bg="hsla(234, 89%, 74%,0.25)"
+                                    w="100%"
+                                    mt="16px"
+                                    _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
+                                    _active={{
+                                        bg: "hsla(234, 89%, 74%,0.75)",
+                                    }}
+                                    onClick={() => {
+                                        setCalculationData(calculationData => ({
+                                            ...calculationData,
+                                            groups: calculationData.groups.map(
+                                                (group, index) => {
+                                                    if (index != groupIndex)
+                                                        return group
+                                                    return {
+                                                        ...group,
+                                                        modules: [
+                                                            ...group.modules,
+                                                            defaultModuleValues,
+                                                        ],
+                                                    }
+                                                },
+                                            ),
+                                        }))
+                                    }}>
+                                    Add Module
+                                </Button>
                             </AccordionPanel>
                         </AccordionItem>
                     ))}
@@ -373,10 +424,51 @@ const Calculator = () => {
             <Input placeholder={"Gibe GPA"} />
             <Button
                 bg="hsla(234, 89%, 74%,0.25)"
+                w="100%"
                 _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
-                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}>
-                NUS
+                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}
+                onClick={onOpen}>
+                Add Group
             </Button>
+
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Create A Group</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb={6}>
+                        <FormControl>
+                            <Input
+                                placeholder="Group name"
+                                defaultValue={"Semester ?"}
+                                onChange={e => setGroupName(e.target.value)}
+                            />
+                        </FormControl>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button
+                            colorScheme="blue"
+                            mr={3}
+                            onClick={() => {
+                                setCalculationData(calculationData => ({
+                                    ...calculationData,
+                                    groups: [
+                                        ...calculationData.groups,
+                                        {
+                                            name: groupName,
+                                            modules: [defaultModuleValues],
+                                        },
+                                    ],
+                                }))
+                                onClose()
+                            }}>
+                            Save
+                        </Button>
+                        <Button onClick={onClose}>Cancel</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </VStack>
     )
 }
