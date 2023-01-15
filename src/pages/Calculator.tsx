@@ -199,6 +199,14 @@ const Calculator = () => {
         setCalculationData(calculationData_copy)
     }
 
+    const deleteModule = (groupIndex: number, moduleIndex: number) => {
+        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
+
+        calculationData_copy.groups[groupIndex].modules.splice(moduleIndex, 1)
+
+        setCalculationData(calculationData_copy)
+    }
+
     useEffect(() => {
         setResultGPA(calculateCumulativeGPA(calculationData))
         setResultTotalCredits(calculateTotalCredits(calculationData))
@@ -374,7 +382,13 @@ const Calculator = () => {
                                                     bg: "customRed.100",
                                                 }}
                                                 icon={<Trash2 />}
-                                                aria-label={""}></IconButton>
+                                                aria-label={""}
+                                                onClick={() =>
+                                                    deleteModule(
+                                                        groupIndex,
+                                                        moduleIndex,
+                                                    )
+                                                }></IconButton>
                                         </HStack>
                                     </Box>
                                 ))}
