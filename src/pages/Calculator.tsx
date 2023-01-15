@@ -57,7 +57,10 @@ const Calculator = () => {
                     {
                         name: "Hello",
                         credits: 4,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                        grade:
+                            systemIndex === 2
+                                ? PolyGrade.A
+                                : UniGrade["A+ / A"],
                     },
                 ],
             },
@@ -67,7 +70,7 @@ const Calculator = () => {
     const [groupName, setGroupName] = useState("Semester ?")
 
     const defaultModuleValues: Module = {
-        grade: systemIndex == 2 ? PolyGrade.A : UniGrade.A,
+        grade: systemIndex == 2 ? PolyGrade.A : UniGrade["A+ / A"],
         credits: 4,
         name: "Enter Module Name",
     }
@@ -85,7 +88,8 @@ const Calculator = () => {
 
     const calculateCumulativeGPA = (calculationData: CalculationData) => {
         let totalCredits = calculationData.totalCredits
-        let totalGrade = calculationData.currentGPA * calculationData.totalCredits
+        let totalGrade =
+            calculationData.currentGPA * calculationData.totalCredits
         calculationData.groups.forEach(group => {
             group.modules.forEach(module => {
                 totalCredits += module.credits
@@ -96,32 +100,17 @@ const Calculator = () => {
     }
 
     const calculateFood = (gpa: number) => {
-        let value
-        switch (gpa) {
-            case 5:
-                value = "McSpicy"
-                break
-            case 4:
-                value = "Nasi Lemak"
-                break
-            case 3.5:
-                value = "Chicken Rice"
-                break
-            case 3:
-                value = "Bubble Tea"
-                break
-            case 1.5:
-                value = "Milo"
-                break
-            default:
-                if (gpa < 1.5) {
-                    value = "uhhhhh.."
-                } else {
-                    value = "Bit high ah"
-                }
+        if (gpa === 5) {
+            return "McSpicy 🍔"
+        } else if (gpa >= 4) {
+            return "Nasi Lemak 🍚"
+        } else if (gpa >= 3.5) {
+            return "Chicken Rice 🍗"
+        } else if (gpa >= 2.5) {
+            return "Bubble Tea 🧋"
         }
 
-        return value
+        return "Water 💧"
     }
 
     const calculateGPAPerGroup = (group: Group) => {
@@ -145,7 +134,10 @@ const Calculator = () => {
                         {
                             name: "Hello",
                             credits: 4,
-                            grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                            grade:
+                                systemIndex === 2
+                                    ? PolyGrade.A
+                                    : UniGrade["A+ / A"],
                         },
                     ],
                 },
