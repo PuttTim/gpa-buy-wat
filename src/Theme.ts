@@ -31,6 +31,10 @@ const theme: ThemeConfig = extendTheme({
         red: {
             400: "#FF5959",
         },
+        customRed: {
+            100: "#8f3c3c",
+            500: "#FF5959",
+        },
         customGrey: {
             100: "#1f1f1f",
             500: "#282828",
@@ -53,6 +57,12 @@ const theme: ThemeConfig = extendTheme({
             },
         },
         NumberInput: {
+            defaultProps: {
+                variant: "filled",
+                focusBorderColor: "customIndigo.500",
+            },
+        },
+        Select: {
             defaultProps: {
                 variant: "filled",
                 focusBorderColor: "customIndigo.500",
