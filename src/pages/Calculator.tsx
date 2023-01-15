@@ -8,6 +8,9 @@ import {
     Button,
     Card,
     Center,
+    Editable,
+    EditableInput,
+    EditablePreview,
     FormControl,
     FormLabel,
     Heading,
@@ -188,6 +191,18 @@ const Calculator = () => {
         setCalculationData(calculationData_copy)
     }
 
+    const updateModuleName = (
+        name: string,
+        groupIndex: number,
+        moduleIndex: number,
+    ) => {
+        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
+
+        calculationData_copy.groups[groupIndex].modules[moduleIndex].name = name
+
+        setCalculationData(calculationData_copy)
+    }
+
     useEffect(() => {
         setResultGPA(calculateCumulativeGPA(calculationData.groups))
         setResultTotalCredits(calculateTotalCredits(calculationData.groups))
@@ -255,18 +270,6 @@ const Calculator = () => {
                                 _active={{ bg: "customIndigo.150" }}>
                                 <HStack w="100%" justifyContent="space-between">
                                     <Center gap="8px">
-                                        <IconButton
-                                            variant="unstyled"
-                                            size="xs"
-                                            onClick={() => {
-                                                console.log(
-                                                    "edit group name clicked",
-                                                )
-                                            }}
-                                            icon={<Edit3 />}
-                                            m={0}
-                                            aria-label={""}
-                                        />
                                         <Heading
                                             fontSize="2xl"
                                             fontWeight="medium">
@@ -289,9 +292,22 @@ const Calculator = () => {
                             <AccordionPanel bg="customGrey.100">
                                 {group.modules.map((module, moduleIndex) => (
                                     <Box w="100%" h="auto" mb="2">
-                                        {module.name === undefined
-                                            ? "Enter a module name"
-                                            : module.name}
+                                        <Editable
+                                            onChange={value => {
+                                                updateModuleName(
+                                                    value,
+                                                    groupIndex,
+                                                    moduleIndex,
+                                                )
+                                            }}
+                                            value={
+                                                module.name === undefined
+                                                    ? "Enter a module name"
+                                                    : module.name
+                                            }>
+                                            <EditablePreview />
+                                            <EditableInput />
+                                        </Editable>
                                         <HStack
                                             gap="8px"
                                             justifyContent="space-around">
