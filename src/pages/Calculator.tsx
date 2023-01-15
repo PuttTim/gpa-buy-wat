@@ -7,18 +7,22 @@ import {
     Box,
     Button,
     Card,
-    Center, Heading,
-    HStack, IconButton,
-    Input, NumberDecrementStepper,
+    Center,
+    Heading,
+    HStack,
+    IconButton,
+    Input,
+    NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
     Select,
-    VStack
+    VStack,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
+import { ResultText } from "../components/ResultText"
 import { SelectSystem } from "../components/SelectSystem"
 import { CalculationData } from "../interfaces/CalculationData"
 import { PolyGrade, UniGrade } from "../interfaces/Grade"
@@ -26,8 +30,9 @@ import { Group } from "../interfaces/Group"
 
 const Calculator = () => {
     const [systemIndex, setSystemIndex] = useState(0)
-    const [gpa, setGpa] = useState(0)
-    const [totalCredits, setTotalCredits] = useState(0)
+    const [resultGPA, setResultGPA] = useState(0)
+    const [resultTotalCredits, setResultTotalCredits] = useState(0)
+    const [resultFood, setResultFood] = useState("")
     const [calculationData, setCalculationData] = useState<CalculationData>({
         currentGPA: 0,
         totalCredits: 0,
@@ -52,7 +57,7 @@ const Calculator = () => {
                     },
                 ],
             },
-            
+
             {
                 name: "Semester 2",
                 modules: [
@@ -102,6 +107,35 @@ const Calculator = () => {
             })
         })
         return totalGrade / totalCredits
+    }
+
+    const calculateFood = (gpa: number) => {
+        let value
+        switch (gpa) {
+            case 5:
+                value = "McSpicy"
+                break
+            case 4:
+                value = "Nasi Lemak"
+                break
+            case 3.5:
+                value = "Chicken Rice"
+                break
+            case 3:
+                value = "Bubble Tea"
+                break
+            case 1.5:
+                value = "Milo"
+                break
+            default:
+                if (gpa < 1.5) {
+                    value = "uhhhhh.."
+                } else {
+                    value = "Bit high ah"
+                }
+        }
+
+        return value
     }
 
     const calculateGPAPerGroup = (group: Group) => {
@@ -207,8 +241,9 @@ const Calculator = () => {
     }
 
     useEffect(() => {
-        setGpa(calculateCumulativeGPA(calculationData.groups))
-        setTotalCredits(calculateTotalCredits(calculationData.groups))
+        setResultGPA(calculateCumulativeGPA(calculationData.groups))
+        setResultTotalCredits(calculateTotalCredits(calculationData.groups))
+        setResultFood(calculateFood(resultGPA))
     }, [calculationData, systemIndex])
 
     return (
@@ -370,13 +405,9 @@ const Calculator = () => {
                     ))}
                 </Accordion>
             </Card>
-            <Input placeholder={"Gibe GPA"} />
-            <Button
-                bg="hsla(234, 89%, 74%,0.25)"
-                _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
-                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}>
-                NUS
-            </Button>
+            <ResultText header="Your GPA: " text={resultGPA} />
+            <ResultText header="Total Credits: " text={resultTotalCredits} />
+            <ResultText header="You can buy " text={resultFood} />
         </VStack>
     )
 }
