@@ -188,62 +188,6 @@ const Calculator = () => {
         setCalculationData(calculationData_copy)
     }
 
-    // const getGradeFromPoints = (points: string) => {
-    //     if (systemIndex === 2) {
-    //         switch (points) {
-    //             case "4":
-    //                 return PolyGrade.A
-    //             case "3.5":
-    //                 return PolyGrade["B+"]
-    //             case "3":
-    //                 return PolyGrade.B
-    //             case "2.5":
-    //                 return PolyGrade["C+"]
-    //             case "2":
-    //                 return PolyGrade.C
-    //             case "1.5":
-    //                 return PolyGrade["D+"]
-    //             case "1.0":
-    //                 return PolyGrade.D
-    //             case "0.5":
-    //                 return PolyGrade["D-"]
-    //             case "F":
-    //                 return PolyGrade.F
-    //             default:
-    //                 return PolyGrade.A
-    //         }
-    //     } else {
-    //         switch (points) {
-    //             case "A+":
-    //                 return UniGrade["A+"]
-    //             case "A":
-    //                 return UniGrade.A
-    //             case "A-":
-    //                 return UniGrade["A-"]
-    //             case "B+":
-    //                 return UniGrade["B+"]
-    //             case "B":
-    //                 return UniGrade.B
-    //             case "B-":
-    //                 return UniGrade["B-"]
-    //             case "C+":
-    //                 return UniGrade["C+"]
-    //             case "C":
-    //                 return UniGrade.C
-    //             case "C-":
-    //                 return UniGrade["C-"]
-    //             case "D+":
-    //                 return UniGrade["D+"]
-    //             case "D":
-    //                 return UniGrade.D
-    //             case "F":
-    //                 return UniGrade.F
-    //             default:
-    //                 return UniGrade.A
-    //         }
-    //     }
-    // }
-
     useEffect(() => {
         setResultGPA(calculateCumulativeGPA(calculationData.groups))
         setResultTotalCredits(calculateTotalCredits(calculationData.groups))
@@ -333,7 +277,9 @@ const Calculator = () => {
                                         <Heading
                                             fontSize="2xl"
                                             fontWeight="medium">
-                                            3.95
+                                            {calculateGPAPerGroup(
+                                                group,
+                                            ).toFixed(2)}
                                         </Heading>
                                         <AccordionIcon />
                                     </Center>
@@ -438,8 +384,11 @@ const Calculator = () => {
                     ))}
                 </Accordion>
             </Card>
-            <ResultText header="Your GPA: " text={resultGPA} />
-            <ResultText header="Total Credits: " text={resultTotalCredits} />
+            <ResultText header="Your GPA: " text={resultGPA.toString()} />
+            <ResultText
+                header="Total Credits: "
+                text={resultTotalCredits.toString()}
+            />
             <ResultText header="You can buy " text={resultFood} />
             <Input placeholder={"Gibe GPA"} />
             <Button
