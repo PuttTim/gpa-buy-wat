@@ -10,10 +10,8 @@ import {
     Center,
     FormControl,
     FormLabel,
-   
     Heading,
     HStack,
-   
     IconButton,
     Input,
     Modal,
@@ -23,7 +21,6 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-   
     NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
@@ -31,7 +28,7 @@ import {
     NumberInputStepper,
     Select,
     useDisclosure,
-    VStack,,
+    VStack,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
