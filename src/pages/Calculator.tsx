@@ -287,7 +287,11 @@ const Calculator = () => {
 
                             <AccordionPanel bg="customGrey.100">
                                 {group.modules.map((module, moduleIndex) => (
-                                    <Box w="100%" h="auto" mb="2">
+                                    <Box
+                                        w="100%"
+                                        h="auto"
+                                        mb="2"
+                                        key={moduleIndex}>
                                         <Editable
                                             onChange={value => {
                                                 updateModuleName(
