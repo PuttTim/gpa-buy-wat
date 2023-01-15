@@ -8,29 +8,45 @@ import {
     Button,
     Card,
     Center,
+    FormControl,
+    FormLabel,
+   
     Heading,
     HStack,
+   
     IconButton,
     Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+   
     NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
     Select,
-    VStack,
+    useDisclosure,
+    VStack,,
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
+import { ResultText } from "../components/ResultText"
 import { SelectSystem } from "../components/SelectSystem"
 import { CalculationData } from "../interfaces/CalculationData"
 import { PolyGrade, UniGrade } from "../interfaces/Grade"
 import { Group } from "../interfaces/Group"
+import { Module } from "../interfaces/Module"
 
 const Calculator = () => {
     const [systemIndex, setSystemIndex] = useState(0)
-    const [gpa, setGpa] = useState(0)
-    const [totalCredits, setTotalCredits] = useState(0)
+    const [resultGPA, setResultGPA] = useState(0)
+    const [resultTotalCredits, setResultTotalCredits] = useState(0)
+    const [resultFood, setResultFood] = useState("")
     const [calculationData, setCalculationData] = useState<CalculationData>({
         currentGPA: 0,
         totalCredits: 0,
@@ -44,14 +60,53 @@ const Calculator = () => {
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
                     {
-                        name: "Work",
-                        credits: 0,
+                        name: undefined,
+                        credits: 4,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 5,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                ],
+            },
+
+            {
+                name: "Semester 2",
+                modules: [
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
                 ],
             },
         ],
     })
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [groupName, setGroupName] = useState("")
+
+    const defaultModuleValues: Module = {
+        grade: systemIndex == 2 ? PolyGrade.A : UniGrade.A,
+        credits: 4,
+        name: "Enter Module Name",
+    }
 
     const calculateTotalCredits = (groups: Group[]) => {
         return groups.reduce((prev, group) => {
@@ -74,6 +129,35 @@ const Calculator = () => {
             })
         })
         return totalGrade / totalCredits
+    }
+
+    const calculateFood = (gpa: number) => {
+        let value
+        switch (gpa) {
+            case 5:
+                value = "McSpicy"
+                break
+            case 4:
+                value = "Nasi Lemak"
+                break
+            case 3.5:
+                value = "Chicken Rice"
+                break
+            case 3:
+                value = "Bubble Tea"
+                break
+            case 1.5:
+                value = "Milo"
+                break
+            default:
+                if (gpa < 1.5) {
+                    value = "uhhhhh.."
+                } else {
+                    value = "Bit high ah"
+                }
+        }
+
+        return value
     }
 
     const calculateGPAPerGroup = (group: Group) => {
@@ -164,8 +248,9 @@ const Calculator = () => {
     // }
 
     useEffect(() => {
-        setGpa(calculateCumulativeGPA(calculationData.groups))
-        setTotalCredits(calculateTotalCredits(calculationData.groups))
+        setResultGPA(calculateCumulativeGPA(calculationData.groups))
+        setResultTotalCredits(calculateTotalCredits(calculationData.groups))
+        setResultFood(calculateFood(resultGPA))
     }, [calculationData, systemIndex])
 
     return (
@@ -322,18 +407,91 @@ const Calculator = () => {
                                         </HStack>
                                     </Box>
                                 ))}
+
+                                <Button
+                                    bg="hsla(234, 89%, 74%,0.25)"
+                                    w="100%"
+                                    mt="16px"
+                                    _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
+                                    _active={{
+                                        bg: "hsla(234, 89%, 74%,0.75)",
+                                    }}
+                                    onClick={() => {
+                                        setCalculationData(calculationData => ({
+                                            ...calculationData,
+                                            groups: calculationData.groups.map(
+                                                (group, index) => {
+                                                    if (index != groupIndex)
+                                                        return group
+                                                    return {
+                                                        ...group,
+                                                        modules: [
+                                                            ...group.modules,
+                                                            defaultModuleValues,
+                                                        ],
+                                                    }
+                                                },
+                                            ),
+                                        }))
+                                    }}>
+                                    Add Module
+                                </Button>
                             </AccordionPanel>
                         </AccordionItem>
                     ))}
                 </Accordion>
             </Card>
+            <ResultText header="Your GPA: " text={resultGPA} />
+            <ResultText header="Total Credits: " text={resultTotalCredits} />
+            <ResultText header="You can buy " text={resultFood} />
             <Input placeholder={"Gibe GPA"} />
             <Button
                 bg="hsla(234, 89%, 74%,0.25)"
+                w="100%"
                 _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
-                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}>
-                NUS
+                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}
+                onClick={onOpen}>
+                Add Group
             </Button>
+
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Create A Group</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody pb={6}>
+                        <FormControl>
+                            <Input
+                                placeholder="Group name"
+                                defaultValue={"Semester ?"}
+                                onChange={e => setGroupName(e.target.value)}
+                            />
+                        </FormControl>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button
+                            colorScheme="blue"
+                            mr={3}
+                            onClick={() => {
+                                setCalculationData(calculationData => ({
+                                    ...calculationData,
+                                    groups: [
+                                        ...calculationData.groups,
+                                        {
+                                            name: groupName,
+                                            modules: [defaultModuleValues],
+                                        },
+                                    ],
+                                }))
+                                onClose()
+                            }}>
+                            Save
+                        </Button>
+                        <Button onClick={onClose}>Cancel</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </VStack>
     )
 }
