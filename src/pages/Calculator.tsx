@@ -83,19 +83,14 @@ const Calculator = () => {
         return totalGrade / totalCredits
     }
 
-    const calculateGPAPerGroup = (groups: Group[]) => {
-        return groups.map(group => {
-            let totalCredits = 0
-            let totalGrade = 0
-            group.modules.forEach(module => {
-                totalCredits += module.credits
-                totalGrade += parseFloat(module.grade) * module.credits
-            })
-            return {
-                ...group,
-                gpa: totalGrade / totalCredits,
-            }
+    const calculateGPAPerGroup = (group: Group) => {
+        let totalCredits = 0
+        let totalGrade = 0
+        group.modules.forEach(module => {
+            totalCredits += module.credits
+            totalGrade += parseFloat(module.grade) * module.credits
         })
+        return totalGrade / totalCredits
     }
 
     useEffect(() => {
