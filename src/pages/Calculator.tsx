@@ -56,43 +56,7 @@ const Calculator = () => {
                 modules: [
                     {
                         name: "Hello",
-                        credits: 0,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
                         credits: 4,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 5,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                ],
-            },
-
-            {
-                name: "Semester 2",
-                modules: [
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
-                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
-                    },
-                    {
-                        name: undefined,
-                        credits: 1,
                         grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
                     },
                 ],
@@ -171,6 +135,25 @@ const Calculator = () => {
     }
 
     useEffect(() => {
+        setCalculationData({
+            currentGPA: 0,
+            totalCredits: 0,
+            groups: [
+                {
+                    name: "Semester 1",
+                    modules: [
+                        {
+                            name: "Hello",
+                            credits: 4,
+                            grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                        },
+                    ],
+                },
+            ],
+        })
+    }, [systemIndex])
+
+    useEffect(() => {
         console.log(calculationData, "calculationData")
         // console.log(systemIndex, "systemIndex")
         // console.log(Object.keys(UniGrade))
@@ -187,6 +170,19 @@ const Calculator = () => {
 
         calculationData_copy.groups[groupIndex].modules[moduleIndex].grade =
             points
+
+        setCalculationData(calculationData_copy)
+    }
+
+    const updateModuleCredits = (
+        credits: string,
+        groupIndex: number,
+        moduleIndex: number,
+    ) => {
+        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
+
+        calculationData_copy.groups[groupIndex].modules[moduleIndex].credits =
+            parseInt(credits)
 
         setCalculationData(calculationData_copy)
     }
@@ -351,7 +347,17 @@ const Calculator = () => {
                                                           ),
                                                       )}
                                             </Select>
-                                            <Input type="number" />
+                                            <Input
+                                                type="number"
+                                                value={module.credits}
+                                                onChange={e =>
+                                                    updateModuleCredits(
+                                                        e.target.value,
+                                                        groupIndex,
+                                                        moduleIndex,
+                                                    )
+                                                }
+                                            />
                                             <IconButton
                                                 bg="customRed.100"
                                                 variant="solid"

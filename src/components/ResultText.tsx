@@ -12,7 +12,7 @@ export const ResultText = (props: ResultTextProps) => {
             <Heading>{props.header}</Heading>
             <Text fontSize="3xl" fontWeight="medium">
                 {props.header === "Your GPA: "
-                    ? parseInt(props.text).toFixed(2)
+                    ? parseFloat(props.text).toFixed(2)
                     : props.text}
             </Text>
         </HStack>
