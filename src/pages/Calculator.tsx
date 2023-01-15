@@ -7,20 +7,15 @@ import {
     Box,
     Button,
     Card,
-    Center,
-    Editable,
-    Heading,
-    HStack,
-    Icon,
-    IconButton,
-    Input,
-    NumberDecrementStepper,
+    Center, Heading,
+    HStack, IconButton,
+    Input, NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
     Select,
-    VStack,
+    VStack
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { Edit3, Trash2 } from "react-feather"
@@ -44,17 +39,125 @@ const Calculator = () => {
                     },
                 ],
             },
+            {
+                name: "Semester 2",
+                modules: [
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                    {
+                        name: undefined,
+                        credits: 1,
+                        grade: systemIndex === 2 ? PolyGrade.A : UniGrade.A,
+                    },
+                ],
+            },
         ],
     })
 
     useEffect(() => {
         console.log(calculationData, "calculationData")
 
-        console.log(systemIndex, "systemIndex")
+        // console.log(systemIndex, "systemIndex")
 
-        console.log(Object.keys(UniGrade))
-        console.log(Object.values(UniGrade))
+        // console.log(Object.keys(UniGrade))
+        // console.log(Object.values(UniGrade))
     }, [systemIndex, calculationData])
+
+    const updateModuleGrade = (
+        points: string,
+        groupIndex: number,
+        moduleIndex: number,
+    ) => {
+        setCalculationData({
+            ...calculationData,
+            groups: calculationData.groups.map((group, index) => {
+                if (index === groupIndex) {
+                    return {
+                        ...group,
+                        modules: group.modules.map((module, index) => {
+                            if (index === moduleIndex) {
+                                return {
+                                    ...module,
+                                    grade: getGradeFromPoints(points),
+                                }
+                            }
+                            return module
+                        }),
+                    }
+                }
+                return group
+            }),
+        })
+    }
+
+    const getGradeFromPoints = (points: string) => {
+        if (systemIndex === 2) {
+            switch (points) {
+                case "A":
+                    return PolyGrade.A
+                case "B+":
+                    return PolyGrade["B+"]
+                case "B":
+                    return PolyGrade.B
+                case "C+":
+                    return PolyGrade["C+"]
+                case "C":
+                    return PolyGrade.C
+                case "D+":
+                    return PolyGrade["D+"]
+                case "D":
+                    return PolyGrade.D
+                case "D-":
+                    return PolyGrade["D-"]
+                case "F":
+                    return PolyGrade.F
+                default:
+                    return PolyGrade.A
+            }
+        } else {
+            switch (points) {
+                case "A+":
+                    return UniGrade["A+"]
+                case "A":
+                    return UniGrade.A
+                case "A-":
+                    return UniGrade["A-"]
+                case "B+":
+                    return UniGrade["B+"]
+                case "B":
+                    return UniGrade.B
+                case "B-":
+                    return UniGrade["B-"]
+                case "C+":
+                    return UniGrade["C+"]
+                case "C":
+                    return UniGrade.C
+                case "C-":
+                    return UniGrade["C-"]
+                case "D+":
+                    return UniGrade["D+"]
+                case "D":
+                    return UniGrade.D
+                case "F":
+                    return UniGrade.F
+                default:
+                    return UniGrade.A
+            }
+        }
+    }
 
     return (
         <VStack spacing="16px" align="start">
@@ -106,94 +209,113 @@ const Calculator = () => {
                 borderColor="customGrey.900"
                 variant="outline">
                 <Accordion allowMultiple defaultValue={1}>
-                    <AccordionItem border="none">
-                        <AccordionButton
-                            py="8px"
-                            px="12px"
-                            bg="customIndigo.150"
-                            borderRadius={8}
-                            _hover={{ bg: "customIndigo.250" }}
-                            _active={{ bg: "customIndigo.150" }}>
-                            <HStack w="100%" justifyContent="space-between">
-                                <Center gap="8px">
-                                    <IconButton
-                                        variant="unstyled"
-                                        size="xs"
-                                        onClick={() => {
-                                            console.log(
-                                                "edit group name clicked",
-                                            )
-                                        }}
-                                        icon={<Edit3 />}
-                                        m={0}
-                                        aria-label={""}
-                                    />
-                                    <Heading fontSize="2xl" fontWeight="medium">
-                                        Semester 1
-                                    </Heading>
-                                </Center>
-                                <Center gap="8px">
-                                    <Heading fontSize="2xl" fontWeight="medium">
-                                        3.95
-                                    </Heading>
-                                    <AccordionIcon />
-                                </Center>
-                            </HStack>
-                        </AccordionButton>
-
-                        <AccordionPanel bg="customGrey.100">
-                            <Box w="100%" h="auto" mb="16px">
-                                Enter Module Name
-                                <HStack gap="8px" justifyContent="space-around">
-                                    <Select
-                                        onChange={e => {
-                                            console.log(e.target.value)
-                                        }}>
-                                        {systemIndex === 2
-                                            ? Object.keys(PolyGrade).map(
-                                                  (key, index) => (
-                                                      <option
-                                                          key={index}
-                                                          value={
-                                                              PolyGrade[
-                                                                  key as keyof typeof PolyGrade
-                                                              ]
-                                                          }>
-                                                          {key}
-                                                      </option>
-                                                  ),
-                                              )
-                                            : Object.keys(UniGrade).map(
-                                                  (key, index) => (
-                                                      <option
-                                                          key={index}
-                                                          value={
-                                                              UniGrade[
-                                                                  key as keyof typeof UniGrade
-                                                              ]
-                                                          }>
-                                                          {key}
-                                                      </option>
-                                                  ),
-                                              )}
-                                    </Select>
-                                    <Input type="number" />
-                                    <IconButton
-                                        bg="customRed.100"
-                                        variant="solid"
-                                        p="8px"
-                                        size="md"
-                                        _hover={{ bg: "customRed.500" }}
-                                        _active={{ bg: "customRed.100" }}
-                                        icon={<Trash2 />}
-                                        aria-label={""}></IconButton>
+                    {calculationData.groups.map((group, groupIndex) => (
+                        <AccordionItem border="none" mb="16px" key={groupIndex}>
+                            <AccordionButton
+                                py="8px"
+                                px="12px"
+                                bg="customIndigo.150"
+                                borderRadius={8}
+                                _hover={{ bg: "customIndigo.250" }}
+                                _active={{ bg: "customIndigo.150" }}>
+                                <HStack w="100%" justifyContent="space-between">
+                                    <Center gap="8px">
+                                        <IconButton
+                                            variant="unstyled"
+                                            size="xs"
+                                            onClick={() => {
+                                                console.log(
+                                                    "edit group name clicked",
+                                                )
+                                            }}
+                                            icon={<Edit3 />}
+                                            m={0}
+                                            aria-label={""}
+                                        />
+                                        <Heading
+                                            fontSize="2xl"
+                                            fontWeight="medium">
+                                            {group.name}
+                                        </Heading>
+                                    </Center>
+                                    <Center gap="8px">
+                                        <Heading
+                                            fontSize="2xl"
+                                            fontWeight="medium">
+                                            3.95
+                                        </Heading>
+                                        <AccordionIcon />
+                                    </Center>
                                 </HStack>
-                            </Box>
-                            <Box w="100%" h="autopx">
-                                Enter Module Name
-                            </Box>
-                        </AccordionPanel>
-                    </AccordionItem>
+                            </AccordionButton>
+
+                            <AccordionPanel bg="customGrey.100">
+                                {group.modules.map((module, moduleIndex) => (
+                                    <Box w="100%" h="auto" mb="2">
+                                        {module.name === undefined
+                                            ? "Enter a module name"
+                                            : module.name}
+                                        <HStack
+                                            gap="8px"
+                                            justifyContent="space-around">
+                                            <Select
+                                                key={moduleIndex}
+                                                onChange={e => {
+                                                    console.log(e.target.value)
+
+                                                    updateModuleGrade(
+                                                        e.target.value,
+                                                        groupIndex,
+                                                        moduleIndex,
+                                                    )
+                                                }}
+                                                value={module.grade}>
+                                                {systemIndex === 2
+                                                    ? Object.keys(
+                                                          PolyGrade,
+                                                      ).map((key, index) => (
+                                                          <option
+                                                              key={index}
+                                                              value={
+                                                                  PolyGrade[
+                                                                      key as keyof typeof PolyGrade
+                                                                  ]
+                                                              }>
+                                                              {key}
+                                                          </option>
+                                                      ))
+                                                    : Object.keys(UniGrade).map(
+                                                          (key, index) => (
+                                                              <option
+                                                                  key={index}
+                                                                  value={
+                                                                      UniGrade[
+                                                                          key as keyof typeof UniGrade
+                                                                      ]
+                                                                  }>
+                                                                  {key}
+                                                              </option>
+                                                          ),
+                                                      )}
+                                            </Select>
+                                            <Input type="number" />
+                                            <IconButton
+                                                bg="customRed.100"
+                                                variant="solid"
+                                                p="8px"
+                                                size="md"
+                                                _hover={{ bg: "customRed.500" }}
+                                                _active={{
+                                                    bg: "customRed.100",
+                                                }}
+                                                icon={<Trash2 />}
+                                                aria-label={""}></IconButton>
+                                        </HStack>
+                                    </Box>
+                                ))}
+                            </AccordionPanel>
+                        </AccordionItem>
+                    ))}
                 </Accordion>
             </Card>
             <Input placeholder={"Gibe GPA"} />
