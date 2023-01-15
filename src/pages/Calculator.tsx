@@ -64,7 +64,7 @@ const Calculator = () => {
         ],
     })
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const [groupName, setGroupName] = useState("")
+    const [groupName, setGroupName] = useState("Semester ?")
 
     const defaultModuleValues: Module = {
         grade: systemIndex == 2 ? PolyGrade.A : UniGrade.A,
@@ -374,12 +374,19 @@ const Calculator = () => {
                                 ))}
 
                                 <Button
-                                    bg="hsla(234, 89%, 74%,0.25)"
                                     w="100%"
                                     mt="16px"
-                                    _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
+                                    variant="outline"
+                                    borderWidth="2px"
+                                    borderColor="customIndigo.250"
+                                    color="customIndigo.100"
+                                    _hover={{
+                                        bg: "customIndigo.500",
+                                        borderColor: "customIndigo.500",
+                                    }}
                                     _active={{
-                                        bg: "hsla(234, 89%, 74%,0.75)",
+                                        bg: "customIndigo.250",
+                                        borderColor: "customIndigo.250",
                                     }}
                                     onClick={() => {
                                         setCalculationData(calculationData => ({
@@ -405,6 +412,20 @@ const Calculator = () => {
                         </AccordionItem>
                     ))}
                 </Accordion>
+                <Button
+                    bg="customIndigo.500"
+                    w="100%"
+                    _hover={{
+                        bg: "customIndigo.500",
+                        borderColor: "customIndigo.500",
+                    }}
+                    _active={{
+                        bg: "customIndigo.250",
+                        borderColor: "customIndigo.250",
+                    }}
+                    onClick={onOpen}>
+                    Add Group
+                </Button>
             </Card>
             <ResultText header="Your GPA: " text={resultGPA.toString()} />
             <ResultText
@@ -412,16 +433,6 @@ const Calculator = () => {
                 text={resultTotalCredits.toString()}
             />
             <ResultText header="You can buy " text={resultFood} />
-            <Input placeholder={"Gibe GPA"} />
-            <Button
-                bg="hsla(234, 89%, 74%,0.25)"
-                w="100%"
-                _hover={{ bg: "hsla(234, 89%, 74%,0.40)" }}
-                _active={{ bg: "hsla(234, 89%, 74%,0.75)" }}
-                onClick={onOpen}>
-                Add Group
-            </Button>
-
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
                 <ModalContent>
@@ -431,7 +442,7 @@ const Calculator = () => {
                         <FormControl>
                             <Input
                                 placeholder="Group name"
-                                defaultValue={"Semester ?"}
+                                value={groupName}
                                 onChange={e => setGroupName(e.target.value)}
                             />
                         </FormControl>
