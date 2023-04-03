@@ -2,8 +2,11 @@ import React from "react"
 import { Box, Center, Heading } from "@chakra-ui/react"
 import { Route, Routes } from "react-router-dom"
 import Calculator from "./pages/Calculator"
+import ReactGA from "react-ga4"
 
 const App = () => {
+    ReactGA.initialize("G-YDGEVRERT0")
+
     return (
         <>
             <Box bg="customGrey.500" w="auto" p="8px" mb="24px">

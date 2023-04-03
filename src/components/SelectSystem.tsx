@@ -11,6 +11,7 @@ import {
     useTab,
     VStack,
 } from "@chakra-ui/react"
+import ReactGA from "react-ga4"
 
 interface SelectSystemProps {
     setIndex: (index: number) => void
@@ -41,24 +42,17 @@ export const SelectSystem = (props: SelectSystemProps) => {
         color: "customIndigo.100",
     }
     return (
-        // <HStack
-        //     w="100%"
-        //     py="8px"
-        //     px="12px"
-        //     bg="customGrey.500"
-        //     justify="space-between"
-        //     gap="8px"
-        //     divider={<StackDivider />}>
-        //     <Button w="33%">NUS</Button>
-        //     <Button w="33%">NTU</Button>
-        //     <Button w="33%">Poly</Button>
-        // </HStack>
         <Box w="100%" px="12px" py="8px" bg="customGrey.500" borderRadius={8}>
             <Tabs
                 w="100%"
                 variant="unstyled"
                 onChange={index => {
                     props.setIndex(index)
+                    ReactGA.event({
+                        category: "Click",
+                        action: "select_system",
+                        value: index,
+                    })
                 }}>
                 <TabList justifyContent="space-between" gap="8px">
                     <Tab
