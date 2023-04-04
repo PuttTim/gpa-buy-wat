@@ -13,19 +13,22 @@ const App = () => {
     })
 
     return (
-        <Box>
-            <Box bg="customGrey.500" minH="5vh" w="auto" p="8px" mb="24px">
-                <Center>
-                    <Heading>GPA buy wat?</Heading>
-                </Center>
+        <>
+            <Box minH="90vh">
+                <Box bg="customGrey.500" w="auto" px={8} mb={4} py={4}>
+                    <Center>
+                        <Heading>GPA buy wat?</Heading>
+                    </Center>
+                </Box>
+                <Box maxW="1400px" m="auto" px="16px" pb={8}>
+                    <Routes>
+                        <Route path="/" element={<Calculator />} />
+                    </Routes>
+                </Box>
             </Box>
-            <Box maxW="1400px" minH="75vh" m="auto" px="16px" mb="64px">
-                <Routes>
-                    <Route path="/" element={<Calculator />} />
-                </Routes>
-            </Box>
+
             <Footer />
-        </Box>
+        </>
     )
 }
 

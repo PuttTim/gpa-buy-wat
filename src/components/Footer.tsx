@@ -5,6 +5,7 @@ import {
     HStack,
     Icon,
     IconButton,
+    Stack,
     Text,
     Tooltip,
     VStack,
@@ -14,32 +15,29 @@ import { GitHub } from "react-feather"
 
 const Footer = () => {
     return (
-        <Box
-            h="100%"
-            minH="10vh"
-            position="sticky"
-            bgColor="customGrey.500"
-            w="100%"
-            px={8}
-            py={4}>
-            <VStack>
-                <Heading
+        <Box w="100%" h="10vh" bgColor="customGrey.500" px={8}>
+            <VStack h="100%" justifyContent="center" alignItems="center" py={8}>
+                <Text
                     textAlign="center"
-                    size={{
-                        base: "sm",
-                        md: "md",
+                    fontWeight="bold"
+                    fontSize={{
+                        base: "md",
+                        md: "xl",
                     }}>
                     <span>
-                        <Tooltip label="Project was originally made for NUS Hackers' Hack&Roll 2023!">
-                            <Heading
-                                size={{
-                                    base: "sm",
-                                    md: "md",
+                        <Tooltip
+                            placement="top"
+                            label="Project was originally made for NUS Hackers' Hack&Roll 2023!"
+                            aria-label="Project was originally made for NUS Hackers' Hack&Roll 2023!">
+                            <Text
+                                fontSize={{
+                                    base: "md",
+                                    md: "xl",
                                 }}
                                 display="inline-block"
                                 textDecoration="dotted">
                                 Project
-                            </Heading>
+                            </Text>
                         </Tooltip>
                     </span>{" "}
                     made with ❤️ by{" "}
@@ -74,7 +72,7 @@ const Footer = () => {
                             </Text>
                         </a>
                     </span>
-                </Heading>
+                </Text>
                 <a
                     href="https://github.com/PuttTim/gpa-buy-wat"
                     target="_blank">
