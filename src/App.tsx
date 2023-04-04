@@ -6,6 +6,10 @@ import ReactGA from "react-ga4"
 
 const App = () => {
     ReactGA.initialize("G-YDGEVRERT0")
+    ReactGA.send({
+        hitType: "pageview",
+        page: "GPA Buy Wat? | Singapore University & Polytechnic GPA Calculator",
+    })
 
     return (
         <>
