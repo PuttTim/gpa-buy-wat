@@ -24,23 +24,27 @@ const Footer = () => {
             px={8}
             py={4}
             justifyContent="center">
-            <Heading
+            <Text
                 textAlign="center"
-                size={{
-                    base: "sm",
-                    md: "md",
+                fontWeight="bold"
+                fontSize={{
+                    base: "md",
+                    md: "xl",
                 }}>
                 <span>
-                    <Tooltip label="Project was originally made for NUS Hackers' Hack&Roll 2023!">
-                        <Heading
-                            size={{
-                                base: "sm",
-                                md: "md",
+                    <Tooltip
+                        placement="top"
+                        label="Project was originally made for NUS Hackers' Hack&Roll 2023!"
+                        aria-label="Project was originally made for NUS Hackers' Hack&Roll 2023!">
+                        <Text
+                            fontSize={{
+                                base: "md",
+                                md: "xl",
                             }}
                             display="inline-block"
                             textDecoration="dotted">
                             Project
-                        </Heading>
+                        </Text>
                     </Tooltip>
                 </span>{" "}
                 made with ❤️ by{" "}
@@ -67,7 +71,7 @@ const Footer = () => {
                         </Text>
                     </a>
                 </span>
-            </Heading>
+            </Text>
             <a href="https://github.com/PuttTim/gpa-buy-wat" target="_blank">
                 <HStack>
                     <Icon>
