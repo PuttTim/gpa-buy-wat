@@ -1,8 +1,9 @@
 import React from "react"
-import { Box, Center, Heading } from "@chakra-ui/react"
+import { Box, Center, Heading, Text } from "@chakra-ui/react"
 import { Route, Routes } from "react-router-dom"
 import Calculator from "./pages/Calculator"
 import ReactGA from "react-ga4"
+import Footer from "./components/Footer"
 
 const App = () => {
     ReactGA.initialize("G-YDGEVRERT0")
@@ -13,16 +14,20 @@ const App = () => {
 
     return (
         <>
-            <Box bg="customGrey.500" w="auto" p="8px" mb="24px">
-                <Center>
-                    <Heading>GPA buy wat?</Heading>
-                </Center>
+            <Box minH="90vh">
+                <Box bg="customGrey.500" w="auto" px={8} mb={4} py={4}>
+                    <Center>
+                        <Heading>GPA buy wat?</Heading>
+                    </Center>
+                </Box>
+                <Box maxW="1400px" m="auto" px="16px" pb={8}>
+                    <Routes>
+                        <Route path="/" element={<Calculator />} />
+                    </Routes>
+                </Box>
             </Box>
-            <Box maxW="1400px" m="auto" px="16px" mb="64px">
-                <Routes>
-                    <Route path="/" element={<Calculator />} />
-                </Routes>
-            </Box>
+
+            <Footer />
         </>
     )
 }
