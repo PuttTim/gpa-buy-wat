@@ -47,7 +47,7 @@ const Calculator = () => {
     const [resultGPA, setResultGPA] = useState(0)
     const [resultTotalCredits, setResultTotalCredits] = useState(0)
     const [resultFood, setResultFood] = useState("")
-    const [calculationData, setCalculationData] = useState<CalculationData>({
+    const baseCalculationData: CalculationData = {
         currentGPA: 0,
         totalCredits: 0,
         groups: [
@@ -55,7 +55,7 @@ const Calculator = () => {
                 name: "Semester 1",
                 modules: [
                     {
-                        name: "Hello",
+                        name: "Enter Module Name",
                         credits: 4,
                         grade:
                             systemIndex === 2
@@ -65,7 +65,9 @@ const Calculator = () => {
                 ],
             },
         ],
-    })
+    }
+    const [calculationData, setCalculationData] =
+        useState<CalculationData>(baseCalculationData)
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [groupName, setGroupName] = useState("Semester ?")
 
@@ -124,25 +126,7 @@ const Calculator = () => {
     }
 
     useEffect(() => {
-        setCalculationData({
-            currentGPA: 0,
-            totalCredits: 0,
-            groups: [
-                {
-                    name: "Semester 1",
-                    modules: [
-                        {
-                            name: "Hello",
-                            credits: 4,
-                            grade:
-                                systemIndex === 2
-                                    ? PolyGrade.A
-                                    : UniGrade["A+ / A"],
-                        },
-                    ],
-                },
-            ],
-        })
+        setCalculationData(baseCalculationData)
     }, [systemIndex])
 
     useEffect(() => {
