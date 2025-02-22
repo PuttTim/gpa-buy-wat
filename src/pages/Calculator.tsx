@@ -112,7 +112,7 @@ const Calculator = () => {
             return "Bubble Tea 🧋"
         }
 
-        return "Water 💧"
+        return "Ice 🧊"
     }
 
     const calculateGPAPerGroup = (group: Group) => {
