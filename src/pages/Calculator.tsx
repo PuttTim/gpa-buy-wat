@@ -47,34 +47,63 @@ const Calculator = () => {
     const [resultGPA, setResultGPA] = useState(0)
     const [resultTotalCredits, setResultTotalCredits] = useState(0)
     const [resultFood, setResultFood] = useState("")
-    const baseCalculationData: CalculationData = {
-        currentGPA: 0,
-        totalCredits: 0,
-        groups: [
-            {
-                name: "Semester 1",
-                modules: [
-                    {
-                        name: "Enter Module Name",
-                        credits: 4,
-                        grade:
-                            systemIndex === 2
-                                ? PolyGrade.A
-                                : UniGrade["A+ / A"],
-                    },
-                ],
-            },
-        ],
+    const LOCAL_STORAGE_BASE_KEY = "gpaCalculatorData"
+
+    const getBaseCalculationData = (
+        currentSystemIndex: number,
+    ): CalculationData => {
+        return {
+            currentGPA: 0,
+            totalCredits: 0,
+            groups: [
+                {
+                    name: "Semester 1",
+                    modules: [
+                        {
+                            name: "Enter Module Name",
+                            credits: currentSystemIndex === 1 ? 3 : 4, // NTU default credits 3
+                            grade:
+                                currentSystemIndex === 2
+                                    ? PolyGrade.A
+                                    : UniGrade["A+ / A"],
+                        },
+                    ],
+                },
+            ],
+        }
     }
-    const [calculationData, setCalculationData] =
-        useState<CalculationData>(baseCalculationData)
+
+    const [calculationData, setCalculationData] = useState<CalculationData>(
+        getBaseCalculationData(systemIndex),
+    )
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [groupName, setGroupName] = useState("Semester ?")
 
-    const defaultModuleValues: Module = {
-        grade: systemIndex == 2 ? PolyGrade.A : UniGrade["A+ / A"],
-        credits: 4,
-        name: "Enter Module Name",
+    useEffect(() => {
+        const dynamicKey = LOCAL_STORAGE_BASE_KEY + "_" + systemIndex
+        const storedData = localStorage.getItem(dynamicKey)
+        if (storedData) {
+            try {
+                const parsedData = JSON.parse(storedData)
+                setCalculationData(parsedData)
+            } catch (error) {
+                console.error("Error parsing data from localStorage:", error)
+                setCalculationData(getBaseCalculationData(systemIndex))
+            }
+        } else {
+            setCalculationData(getBaseCalculationData(systemIndex))
+        }
+    }, []) // Runs only on mount, using initial systemIndex
+
+    const getDefaultModuleValues = (currentSystemIndex: number): Module => {
+        return {
+            grade:
+                currentSystemIndex === 2
+                    ? PolyGrade.A
+                    : UniGrade["A+ / A"],
+            credits: currentSystemIndex === 1 ? 3 : 4, // NTU default credits 3
+            name: "Enter Module Name",
+        }
     }
 
     const calculateTotalCredits = (calculationData: CalculationData) => {
@@ -126,11 +155,34 @@ const Calculator = () => {
     }
 
     useEffect(() => {
-        setCalculationData(baseCalculationData)
-    }, [systemIndex])
+        // This hook now loads data for the new systemIndex or resets.
+        const dynamicKey = LOCAL_STORAGE_BASE_KEY + "_" + systemIndex
+        const storedData = localStorage.getItem(dynamicKey)
+        if (storedData) {
+            try {
+                const parsedData = JSON.parse(storedData)
+                setCalculationData(parsedData)
+            } catch (error) {
+                console.error(
+                    `Error parsing data from localStorage for system ${systemIndex}:`,
+                    error,
+                )
+                setCalculationData(getBaseCalculationData(systemIndex))
+            }
+        } else {
+            // No data found for this system, use base data for the current systemIndex
+            setCalculationData(getBaseCalculationData(systemIndex))
+        }
+    }, [systemIndex]) // Runs when systemIndex changes
 
     useEffect(() => {
-        console.log(calculationData, "calculationData")
+        // Save data to localStorage whenever it changes, using system-specific key
+        const dynamicKey = LOCAL_STORAGE_BASE_KEY + "_" + systemIndex
+        localStorage.setItem(dynamicKey, JSON.stringify(calculationData))
+        console.log(
+            `Saved data for system ${systemIndex} to key ${dynamicKey}`,
+            calculationData,
+        )
         // console.log(systemIndex, "systemIndex")
         // console.log(Object.keys(UniGrade))
         // console.log(Object.values(UniGrade))
@@ -398,7 +450,9 @@ const Calculator = () => {
                                                         ...group,
                                                         modules: [
                                                             ...group.modules,
-                                                            defaultModuleValues,
+                                                            getDefaultModuleValues(
+                                                                systemIndex,
+                                                            ),
                                                         ],
                                                     }
                                                 },
@@ -458,7 +512,11 @@ const Calculator = () => {
                                         ...calculationData.groups,
                                         {
                                             name: groupName,
-                                            modules: [defaultModuleValues],
+                                            modules: [
+                                                getDefaultModuleValues(
+                                                    systemIndex,
+                                                ),
+                                            ],
                                         },
                                     ],
                                 }))
