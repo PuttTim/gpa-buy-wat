@@ -77,6 +77,17 @@ const Calculator = () => {
 
     const [importing, setImporting] = useState(false)
     const [beep, setBeep] = useState<Beep | null>(null)
+    const selectSystem = (index: number) => {
+        setFocusModule(null)
+        setRenaming(null)
+        history.replaceState(null, "", systemPath(index))
+        document.title = pageTitleFor(systemPath(index))
+        setState(current => ({
+            ...current,
+            systemIndex: index,
+        }))
+    }
+
     const openImport = () => {
         // Primed on the tap itself, or the scan beep stays silent on iOS.
         setBeep(primeBeep())
@@ -239,47 +250,44 @@ const Calculator = () => {
     return (
         <>
             <header className="perforated bg-primary pt-[env(safe-area-inset-top,0px)] pb-1 text-primary-foreground">
-                <div className="m-auto grid max-w-[1100px] grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[1fr_auto_auto] lg:px-6">
+                <div className="m-auto grid max-w-[1100px] grid-cols-[1fr_auto_auto] items-center gap-2 px-4 py-3 sm:gap-3 lg:px-6">
                     <div className="flex items-center gap-2.5">
                         <img
                             src="/favicon.svg"
                             alt=""
                             className="size-8 [image-rendering:pixelated]"
                         />
-                        <h1 className="font-mono text-xl uppercase">GPA buy what?</h1>
+                        <h1 className="font-mono text-base whitespace-nowrap uppercase sm:text-xl">GPA buy what?</h1>
                     </div>
-                    <SelectSystem
-                        index={systemIndex}
-                        setIndex={index => {
-                            setFocusModule(null)
-                            setRenaming(null)
-                            history.replaceState(null, "", systemPath(index))
-                            document.title = pageTitleFor(systemPath(index))
-                            setState(current => ({
-                                ...current,
-                                systemIndex: index,
-                            }))
-                        }}
-                    />
-                    <ThemeToggle />
+                    <SelectSystem index={systemIndex} setIndex={selectSystem} className="hidden sm:flex" />
                     <Button
                         variant="ghost"
-                        className="row-start-2 h-10 justify-self-end bg-primary-foreground/15 hover:bg-primary-foreground/25 hover:text-primary-foreground sm:hidden dark:hover:bg-primary-foreground/25"
+                        className="h-9 bg-primary-foreground/15 hover:bg-primary-foreground/25 hover:text-primary-foreground sm:hidden dark:hover:bg-primary-foreground/25"
                         onClick={openImport}>
                         <ScanBarcode />
                         Import
                     </Button>
+                    <ThemeToggle />
                 </div>
             </header>
 
             <div className="m-auto max-w-[1100px] px-4 pt-4 lg:px-6 lg:pt-6">
             <main className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
                 <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
-                    <div className="-mb-2 lg:-mb-3">
-                        <h2 className="font-mono text-base uppercase">So far</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Your GPA and credits from past semesters
-                        </p>
+                    <div className="-mb-2 flex items-end justify-between gap-3 lg:-mb-3">
+                        <div>
+                            <h2 className="font-mono text-base uppercase">So far</h2>
+                            <p className="text-sm text-muted-foreground">
+                                Your GPA and credits from past semesters
+                            </p>
+                        </div>
+                        {/* On phones the header only has room for Import, so the school picker lives here. */}
+                        <SelectSystem
+                            dropdown
+                            index={systemIndex}
+                            setIndex={selectSystem}
+                            className="shrink-0 sm:hidden"
+                        />
                     </div>
                     <Card>
                         <CardContent className="grid grid-cols-2 gap-4">
