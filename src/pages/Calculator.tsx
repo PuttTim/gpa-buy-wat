@@ -34,7 +34,8 @@ import {
 import { pageTitleFor } from "../lib/pages"
 import { SYSTEMS, systemPath } from "../lib/systems"
 import { calculateGPA, creditsIn } from "../lib/calculation"
-import { Beep, primeBeep, Transcript, transferBarcode, useTransferHost } from "../lib/transfer"
+import { Beep, primeBeep } from "../lib/sounds"
+import { Transcript, transferBarcode, useTransferHost } from "../lib/transfer"
 
 type Update = (data: CalculationData) => CalculationData
 

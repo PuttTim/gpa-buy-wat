@@ -8,6 +8,7 @@ import { CalculationData } from "@/interfaces/CalculationData"
 import { Grade } from "@/interfaces/Grade"
 import { calculateGPA } from "@/lib/calculation"
 import { ParsedSemester, parseLocally, parseWithAI } from "@/lib/parseGrades"
+import { playFriesDone } from "@/lib/sounds"
 import { SYSTEMS } from "@/lib/systems"
 import { cn } from "@/lib/utils"
 
@@ -206,7 +207,10 @@ const Review = ({ systemIndex, semesters, setSemesters, onBack, onImport }: Revi
                 <Button variant="outline" onClick={onBack}>
                     Back
                 </Button>
-                <Button disabled={missing > 0 || modules.length === 0} onClick={() => onImport(data)}>
+                <Button disabled={missing > 0 || modules.length === 0} onClick={() => {
+                        playFriesDone()
+                        onImport(data)
+                    }}>
                     Import
                 </Button>
             </div>

@@ -5,7 +5,8 @@ import { calculateGPA } from "@/lib/calculation"
 import { getDetector, openCamera } from "@/lib/scanner"
 import { sanitizeData } from "@/lib/storage"
 import { SYSTEMS } from "@/lib/systems"
-import { Beep, parseTransferBarcode, pullTranscript, Transcript } from "@/lib/transfer"
+import { Beep } from "@/lib/sounds"
+import { parseTransferBarcode, pullTranscript, Transcript } from "@/lib/transfer"
 
 type Step =
     | { kind: "scanning" }
