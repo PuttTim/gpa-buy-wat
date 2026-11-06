@@ -1,4 +1,4 @@
-<img width="1200" alt="GPABuyWhat Feature graphic" src="https://github.com/user-attachments/assets/ed7f56d7-830e-49bd-89bd-951eea377488" />
+<img width="1200" alt="GPABuyWhat Feature graphic" src="docs/feature-graphic.png" />
 
 # GPA Buy What? 🍔🍚🍗🧋🧊
 ### A GPA Calculator Universitites and Polytechnics in Singapore
