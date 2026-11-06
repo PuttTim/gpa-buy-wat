@@ -40,6 +40,6 @@ export enum SmuGrade {
 }
 
 /** Non-numeric results never contribute grade points or GPA credits. */
-export type UngradedGrade = "S" | "U" | "CS" | "CU" | "P" | "NR" | "UP" | "UF" | "ungraded-fail"
+export type UngradedGrade = "S" | "U" | "CS" | "CU" | "P" | "NR" | "LOA" | "UP" | "UF" | "ungraded-fail"
 
 export type Grade = PolyGrade | SmuGrade | UniGrade | UngradedGrade

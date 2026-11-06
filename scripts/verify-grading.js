@@ -36,7 +36,7 @@
     try {
         for (const [school, ungraded, numeric, expected] of [
             ['NUS', ['S', 'U', 'CS', 'CU'], '5', '5.00'],
-            ['NTU', ['P', 'NR', 'ungraded-fail', 'S', 'U'], '5', '5.00'],
+            ['NTU', ['P', 'NR', 'LOA', 'ungraded-fail', 'S', 'U'], '5', '5.00'],
             ['Poly', ['UP', 'UF'], '4', '4.00'],
             ['SMU', ['P', 'ungraded-fail'], '4.3', '4.00'],
         ]) {

@@ -19,9 +19,9 @@ export const SYSTEMS: GradingSystem[] = [
     },
     {
         name: "NTU",
-        grades: { ...UniGrade, "P (Pass)": "P", "NR (No Record)": "NR", "Fail (ungraded)": "ungraded-fail", "S (legacy)": "S", "U (legacy)": "U" },
+        grades: { ...UniGrade, "P (Pass)": "P", "NR (No Record)": "NR", "Dabao / LOA": "LOA", "Fail (ungraded)": "ungraded-fail", "S (legacy)": "S", "U (legacy)": "U" },
         defaultGrade: UniGrade["A+ / A"], defaultCredits: 4, maxGPA: 5,
-        gradingHelp: "Pass/No Record (FGO), ungraded Pass/Fail and legacy S/U don't affect GPA. A regular F counts as zero.",
+        gradingHelp: "Pass/No Record (FGO), Dabao / LOA, ungraded Pass/Fail and legacy S/U don't affect GPA. A regular F counts as zero.",
     },
     {
         name: "Poly",
