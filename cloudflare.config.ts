@@ -6,6 +6,7 @@ export default defineConfig({
         name: "gpa-buy-wat",
         compatibilityDate: "2026-10-23",
         domains: ["gpabuywhat.com", "www.gpabuywhat.com"],
+        previewUrls: true,
         observability: { enabled: true },
         assets: { notFoundHandling: "single-page-application" },
     },
