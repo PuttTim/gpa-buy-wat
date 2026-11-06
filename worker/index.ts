@@ -171,7 +171,9 @@ const parse = async (request: Request, env: Env) => {
     // Last check before spending anything, so bad requests don't use up the budget.
     const budget = env.IMPORTS.get(env.IMPORTS.idFromName(PARSE_BUDGET))
     const spent = await budget.fetch(new Request(`https://budget/${PARSE_BUDGET}`, { method: "POST" }))
-    if (!spent.ok) return error(503, "Daily limit reached")
+    // Only a real "spent" blocks. Previews share production's Durable Objects, so they run
+    // production's copy of this class, which may not count yet; a hiccup shouldn't block either.
+    if (spent.status === 429) return error(503, "Daily limit reached")
     const known: string[] = Array.isArray(input?.codes)
         ? input.codes.filter((code: unknown) => typeof code === "string" && MODULE_CODE.test(code))
         : []
