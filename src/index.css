@@ -113,7 +113,7 @@
 .receipt {
     mask:
         linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat,
-        conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / 16px 8px repeat-x;
+        conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) left bottom / 16px 8px round no-repeat;
 }
 
 @media (min-width: 64rem) {
@@ -124,8 +124,8 @@
     .receipt {
         mask:
             linear-gradient(#000 0 0) center / 100% calc(100% - 14px) no-repeat,
-            conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / 16px 8px repeat-x,
-            conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / 16px 8px repeat-x;
+            conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) left top / 16px 8px round no-repeat,
+            conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) left bottom / 16px 8px round no-repeat;
     }
 }
 
@@ -150,12 +150,16 @@
 /* The top of the receipt on a phone, torn along its upper edge. */
 .receipt-stub-shadow {
     filter: drop-shadow(0 -3px 8px oklch(0.2 0.03 295 / 0.22));
+    /* Its own layer, so Safari composites the shadow and torn edge instead of
+       repainting them every frame while the bar sticks during a scroll. */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
 .receipt-stub {
     mask:
         linear-gradient(#000 0 0) bottom / 100% calc(100% - 7px) no-repeat,
-        conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / 16px 8px repeat-x;
+        conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) left top / 16px 8px round no-repeat;
 }
 
 /* Sonner sets its own font stack; use the app's. */
