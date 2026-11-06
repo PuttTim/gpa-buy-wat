@@ -561,11 +561,11 @@ const Calculator = () => {
                     It fills the row so the receipt can still stick while the buttons scroll away. */}
                 <div className="contents lg:block lg:self-stretch">
                     <div className="hidden grid-cols-2 gap-3 lg:grid">
-                        <Button variant="outline" onClick={openScanner}>
+                        <Button variant="outline" className="border-primary" onClick={openScanner}>
                             <ScanBarcode />
                             Scan
                         </Button>
-                        <Button variant="outline" onClick={() => setImporting(true)}>
+                        <Button variant="outline" className="border-primary" onClick={() => setImporting(true)}>
                             <ClipboardPaste />
                             Import
                         </Button>
