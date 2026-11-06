@@ -471,6 +471,7 @@ const Calculator = () => {
                             open={importing}
                             onOpenChange={setImporting}
                             beep={beep}
+                            systemIndex={systemIndex}
                             onImport={transcript => {
                                 setFocusModule(null)
                                 setRenaming(null)

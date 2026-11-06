@@ -21,6 +21,9 @@ export default defineConfig({
             // Per IP. A page opens one socket, plus a reconnect each time the tab comes back.
             CONNECT_LIMIT: bindings.rateLimit({ namespace: "1001", simple: { limit: 60, period: 60 } }),
             PULL_LIMIT: bindings.rateLimit({ namespace: "1002", simple: { limit: 20, period: 60 } }),
+            // Clairic reads pasted grades the browser couldn't parse itself.
+            AI: bindings.ai(),
+            PARSE_LIMIT: bindings.rateLimit({ namespace: "1003", simple: { limit: 10, period: 60 } }),
         },
     },
 })

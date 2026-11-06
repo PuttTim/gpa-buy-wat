@@ -13,6 +13,8 @@ interface Env {
     IMPORTS: DurableObjectNamespace
     CONNECT_LIMIT: RateLimit
     PULL_LIMIT: RateLimit
+    AI: Ai
+    PARSE_LIMIT: RateLimit
 }
 
 const MAX_MESSAGE_BYTES = 32 * 1024
@@ -112,9 +114,86 @@ export class GPABuyWhatImports {
     }
 }
 
+// Reading pasted grades with Clairic, for what the browser's own parser
+// (src/lib/parseGrades.ts) couldn't finish. Text only: screenshots read too
+// poorly to trust (misread codes, invented rows).
+const MAX_PARSE_BYTES = 32 * 1024
+const MAX_TEXT = 10_000
+const MAX_MODULES = 60
+const MODULE_CODE = /^[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
+const CLAIRIC = "@cf/cloudflare/clairic"
+
+const readFields = (env: Env, text: string, fields: Record<string, unknown>) =>
+    env.AI.run(CLAIRIC, { model: "clairic", state: text, fields })
+
+const parse = async (request: Request, env: Env) => {
+    if (request.method !== "POST") return error(405, "Method not allowed")
+    if (!request.headers.get("content-type")?.startsWith("application/json")) return error(415, "Expected JSON")
+    if (Number(request.headers.get("content-length")) > MAX_PARSE_BYTES) return error(413, "Too large")
+    const ip = request.headers.get("cf-connecting-ip") ?? "unknown"
+    if (!(await env.PARSE_LIMIT.limit({ key: ip })).success) return error(429, "Too many requests")
+
+    const body = await request.text()
+    if (body.length > MAX_PARSE_BYTES) return error(413, "Too large")
+    let input: any
+    try {
+        input = JSON.parse(body)
+    } catch {
+        return error(400, "Invalid JSON")
+    }
+    const text = typeof input?.text === "string" ? input.text.slice(0, MAX_TEXT) : ""
+    if (!text.trim()) return error(400, "Nothing to read")
+    const known: string[] = Array.isArray(input?.codes)
+        ? input.codes.filter((code: unknown) => typeof code === "string" && MODULE_CODE.test(code))
+        : []
+
+    try {
+        // Codes come from the browser when it found them; otherwise Clairic finds them first.
+        let codes = known
+        if (codes.length === 0) {
+            const found = await readFields(env, text, {
+                module_codes: {
+                    type: "list",
+                    items: "text",
+                    instructions: "Every course or module code, such as CS2030, SC1003 or IS111, in the order they appear",
+                },
+            })
+            const listed: unknown[] = found?.answers?.module_codes?.value ?? []
+            codes = listed
+                .map(code => String(code).toUpperCase().replace(/\s+/g, ""))
+                .filter(code => MODULE_CODE.test(code))
+        }
+        codes = [...new Set(codes)].slice(0, MAX_MODULES)
+        if (codes.length === 0) return json({ modules: [] })
+
+        // One grade and one credits field per module, so a missed answer can't shift onto another module.
+        const fields: Record<string, unknown> = {}
+        codes.forEach((code, i) => {
+            fields[`grade_${i}`] = { type: "text", instructions: `The grade received for ${code}, exactly as written` }
+            fields[`credits_${i}`] = { type: "number", instructions: `The credits, units or MCs for ${code}` }
+        })
+        const result = await readFields(env, text, fields)
+        const answers = result?.answers ?? {}
+        const modules = codes.map((code, i) => ({
+            code,
+            grade: typeof answers[`grade_${i}`]?.value === "string" ? answers[`grade_${i}`].value : null,
+            gradeConfidence: Number(answers[`grade_${i}`]?.confidence ?? 0),
+            credits: typeof answers[`credits_${i}`]?.value === "number" ? answers[`credits_${i}`].value : null,
+            creditsConfidence: Number(answers[`credits_${i}`]?.confidence ?? 0),
+        }))
+        return json({ modules })
+    } catch {
+        return error(502, "Couldn't read that")
+    }
+}
+
 export default {
     async fetch(request: Request, env: Env) {
         const url = new URL(request.url)
+        if (url.pathname === "/api/parse") {
+            if (request.headers.get("origin") !== url.origin) return error(403, "Forbidden")
+            return parse(request, env)
+        }
         const match = url.pathname.match(/^\/api\/imports\/([^/]+)(\/pull)?$/)
         if (!match) return error(404, "Not found")
         const id = match[1].toUpperCase()

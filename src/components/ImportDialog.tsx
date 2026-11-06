@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { calculateGPA } from "@/lib/calculation"
 import { getDetector, openCamera } from "@/lib/scanner"
 import { sanitizeData } from "@/lib/storage"
 import { SYSTEMS } from "@/lib/systems"
 import { Beep, parseImportBarcode, pullTranscript, Transcript } from "@/lib/transfer"
+import { PasteImport } from "./PasteImport"
 
 type Step =
     | { kind: "scanning" }
@@ -18,18 +20,21 @@ interface ImportDialogProps {
     onOpenChange: (open: boolean) => void
     /** Primed on the tap that opened the dialog, so phones allow it to play. */
     beep: Beep | null
+    /** The tab pasted grades import into. */
+    systemIndex: number
     onImport: (transcript: Transcript) => void
 }
 
 const SCAN_INTERVAL_MS = 150
 
-export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialogProps) => {
+export const ImportDialog = ({ open, onOpenChange, beep, systemIndex, onImport }: ImportDialogProps) => {
+    const [mode, setMode] = useState<"scan" | "paste">("scan")
     const [step, setStep] = useState<Step>({ kind: "scanning" })
     const [hint, setHint] = useState("")
     const video = useRef<HTMLVideoElement>(null)
 
     useEffect(() => {
-        if (!open || step.kind !== "scanning") return
+        if (!open || mode !== "scan" || step.kind !== "scanning") return
         let stream: MediaStream | null = null
         let timer = 0
         let stopped = false
@@ -85,9 +90,10 @@ export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialo
             }
         })()
         return stop
-    }, [open, step.kind, beep])
+    }, [open, mode, step.kind, beep])
 
     const reset = () => {
+        setMode("scan")
         setHint("")
         setStep({ kind: "scanning" })
     }
@@ -101,7 +107,23 @@ export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialo
             }}>
             <DialogContent>
                 <DialogTitle>Import grades</DialogTitle>
-                {step.kind === "scanning" && (
+                <Tabs value={mode} onValueChange={value => setMode(value as "scan" | "paste")}>
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="scan">Scan barcode</TabsTrigger>
+                        <TabsTrigger value="paste">Paste grades</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                {mode === "paste" && (
+                    <PasteImport
+                        systemIndex={systemIndex}
+                        onImport={data => {
+                            onImport({ systemIndex, data })
+                            onOpenChange(false)
+                            reset()
+                        }}
+                    />
+                )}
+                {mode === "scan" && step.kind === "scanning" && (
                     <>
                         <DialogDescription>
                             Point your camera at the barcode on another device's receipt.
@@ -116,12 +138,12 @@ export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialo
                         </p>
                     </>
                 )}
-                {step.kind === "loading" && (
+                {mode === "scan" && step.kind === "loading" && (
                     <DialogDescription>
                         Scanned <span className="font-mono">{step.barcode}</span>. Asking that device for its grades...
                     </DialogDescription>
                 )}
-                {step.kind === "confirm" && (
+                {mode === "scan" && step.kind === "confirm" && (
                     <ConfirmImport
                         transcript={step.transcript}
                         onCancel={() => onOpenChange(false)}
@@ -132,7 +154,7 @@ export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialo
                         }}
                     />
                 )}
-                {step.kind === "error" && (
+                {mode === "scan" && step.kind === "error" && (
                     <>
                         <DialogDescription>{step.message}</DialogDescription>
                         <Button onClick={reset}>Scan again</Button>

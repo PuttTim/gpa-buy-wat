@@ -16,6 +16,10 @@ interface DurableObjectNamespace {
     get(id: unknown): DurableObjectStub
 }
 
+interface Ai {
+    run(model: string, input: unknown): Promise<any>
+}
+
 interface RateLimit {
     limit(options: { key: string }): Promise<{ success: boolean }>
 }
