@@ -77,6 +77,11 @@ const Calculator = () => {
 
     const [importing, setImporting] = useState(false)
     const [beep, setBeep] = useState<Beep | null>(null)
+    const openImport = () => {
+        // Primed on the tap itself, or the scan beep stays silent on iOS.
+        setBeep(primeBeep())
+        setImporting(true)
+    }
 
     const replaceSystem = (index: number, update: Update) => {
         setState(current => ({
@@ -257,6 +262,13 @@ const Calculator = () => {
                         }}
                     />
                     <ThemeToggle />
+                    <Button
+                        variant="ghost"
+                        className="row-start-2 h-10 justify-self-end bg-primary-foreground/15 hover:bg-primary-foreground/25 hover:text-primary-foreground sm:hidden dark:hover:bg-primary-foreground/25"
+                        onClick={openImport}>
+                        <ScanBarcode />
+                        Import
+                    </Button>
                 </div>
             </header>
 
@@ -450,13 +462,8 @@ const Calculator = () => {
                         <Button variant="outline" className="flex-1" onClick={addSemester}>
                             Add semester
                         </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                // Primed on the tap itself, or the scan beep stays silent on iOS.
-                                setBeep(primeBeep())
-                                setImporting(true)
-                            }}>
+                        {/* On phones, Import sits in the header instead. */}
+                        <Button variant="outline" className="hidden sm:inline-flex" onClick={openImport}>
                             <ScanBarcode />
                             Import
                         </Button>
