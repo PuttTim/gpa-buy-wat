@@ -42,7 +42,7 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt }: ReceiptProp
                 aria-label="Receipt"
                 className="receipt scroll-mt-16 bg-paper px-5 pt-3 pb-8 lg:scroll-mt-6 lg:pt-8 font-mono text-[13px] leading-5 text-paper-ink uppercase lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
                 <div className="text-center">
-                    <p className="text-lg leading-7">GPA buy wat?</p>
+                    <p className="text-lg leading-7">GPA buy what?</p>
                     <p>{system.name}</p>
                 </div>
                 <div className="mt-3 flex justify-between text-paper-faint">

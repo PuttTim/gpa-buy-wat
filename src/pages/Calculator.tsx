@@ -228,7 +228,7 @@ const Calculator = () => {
                             alt=""
                             className="size-8 [image-rendering:pixelated]"
                         />
-                        <h1 className="font-mono text-xl uppercase">GPA buy wat?</h1>
+                        <h1 className="font-mono text-xl uppercase">GPA buy what?</h1>
                     </div>
                     <SelectSystem
                         index={systemIndex}

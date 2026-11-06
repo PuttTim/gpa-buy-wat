@@ -8,7 +8,7 @@ export const initAnalytics = () => {
     ReactGA.initialize("G-YDGEVRERT0")
     ReactGA.send({
         hitType: "pageview",
-        page: "GPA Buy Wat? | Singapore University & Polytechnic GPA Calculator",
+        page: "GPA Buy What? | Singapore University & Polytechnic GPA Calculator",
     })
 }
 
