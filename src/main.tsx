@@ -1,16 +1,16 @@
-import { ChakraProvider } from "@chakra-ui/react"
+import "@fontsource/manrope/400.css"
+import "@fontsource/manrope/500.css"
+import "@fontsource/manrope/600.css"
+import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
-import { BrowserRouter } from "react-router-dom"
 import App from "./App"
 import "./index.css"
-import '@fontsource/dm-sans'
-import '@fontsource/poppins'
-import theme from "./Theme"
+import { initAnalytics } from "./lib/analytics"
+
+initAnalytics()
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <ChakraProvider theme={theme}>
-      <BrowserRouter>
-          <App />
-      </BrowserRouter>
-    </ChakraProvider>,
+    <StrictMode>
+        <App />
+    </StrictMode>,
 )

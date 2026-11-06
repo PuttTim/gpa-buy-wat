@@ -1,0 +1,389 @@
+{
+  "checkedAt": "2026-11-06T09:40:34.008Z",
+  "passed": true,
+  "results": [
+    {
+      "actual": "5.00",
+      "expected": "5.00",
+      "name": "NUS: numeric grade",
+      "passed": true
+    },
+    {
+      "actual": "S",
+      "expected": "S",
+      "name": "NUS: S selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NUS: all S has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NUS: S leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "U",
+      "expected": "U",
+      "name": "NUS: U selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NUS: all U has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NUS: U leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "CS",
+      "expected": "CS",
+      "name": "NUS: CS selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NUS: all CS has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NUS: CS leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "CU",
+      "expected": "CU",
+      "name": "NUS: CU selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NUS: all CU has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NUS: CU leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "5.00",
+      "expected": "5.00",
+      "name": "NUS: ungraded credits excluded from denominator",
+      "passed": true
+    },
+    {
+      "actual": "2.50",
+      "expected": "2.50",
+      "name": "NUS: ordinary F counts",
+      "passed": true
+    },
+    {
+      "actual": "5.00",
+      "expected": "5.00",
+      "name": "NTU: numeric grade",
+      "passed": true
+    },
+    {
+      "actual": "P",
+      "expected": "P",
+      "name": "NTU: P selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NTU: all P has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NTU: P leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "NR",
+      "expected": "NR",
+      "name": "NTU: NR selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NTU: all NR has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NTU: NR leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "ungraded-fail",
+      "expected": "ungraded-fail",
+      "name": "NTU: ungraded-fail selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NTU: all ungraded-fail has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NTU: ungraded-fail leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "S",
+      "expected": "S",
+      "name": "NTU: S selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NTU: all S has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NTU: S leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "U",
+      "expected": "U",
+      "name": "NTU: U selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "NTU: all U has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "NTU: U leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "5.00",
+      "expected": "5.00",
+      "name": "NTU: ungraded credits excluded from denominator",
+      "passed": true
+    },
+    {
+      "actual": "2.50",
+      "expected": "2.50",
+      "name": "NTU: ordinary F counts",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "Poly: numeric grade",
+      "passed": true
+    },
+    {
+      "actual": "UP",
+      "expected": "UP",
+      "name": "Poly: UP selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "Poly: all UP has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "3.00",
+      "expected": "3.00",
+      "name": "Poly: UP leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "UF",
+      "expected": "UF",
+      "name": "Poly: UF selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "Poly: all UF has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "3.00",
+      "expected": "3.00",
+      "name": "Poly: UF leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "Poly: ungraded credits excluded from denominator",
+      "passed": true
+    },
+    {
+      "actual": "2.00",
+      "expected": "2.00",
+      "name": "Poly: ordinary F counts",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "SMU: numeric grade",
+      "passed": true
+    },
+    {
+      "actual": "4.30",
+      "expected": "4.30",
+      "name": "SMU: semester keeps A+ points",
+      "passed": true
+    },
+    {
+      "actual": "P",
+      "expected": "P",
+      "name": "SMU: P selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "SMU: all P has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "3.00",
+      "expected": "3.00",
+      "name": "SMU: P leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "ungraded-fail",
+      "expected": "ungraded-fail",
+      "name": "SMU: ungraded-fail selected",
+      "passed": true
+    },
+    {
+      "actual": "-",
+      "expected": "-",
+      "name": "SMU: all ungraded-fail has no GPA",
+      "passed": true
+    },
+    {
+      "actual": "3.00",
+      "expected": "3.00",
+      "name": "SMU: ungraded-fail leaves prior GPA intact",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "SMU: ungraded credits excluded from denominator",
+      "passed": true
+    },
+    {
+      "actual": "2.15",
+      "expected": "2.15",
+      "name": "SMU: ordinary F counts",
+      "passed": true
+    },
+    {
+      "actual": "3.80",
+      "expected": "3.80",
+      "name": "SMU: A+ is weighted at 4.3 before cumulative cap",
+      "passed": true
+    },
+    {
+      "actual": "4.00",
+      "expected": "4.00",
+      "name": "SMU: cumulative caps at 4.00",
+      "passed": true
+    },
+    {
+      "actual": "4",
+      "expected": "4",
+      "name": "SMU: prior GPA input capped at 4.00",
+      "passed": true
+    },
+    {
+      "actual": "3.80",
+      "expected": "3.80",
+      "name": "SMU: GPA across semesters excludes Pass",
+      "passed": true
+    },
+    {
+      "actual": true,
+      "expected": true,
+      "name": "No horizontal overflow",
+      "passed": true
+    },
+    {
+      "actual": true,
+      "expected": true,
+      "name": "Food images loaded",
+      "passed": true
+    },
+    {
+      "actual": "P",
+      "expected": "P",
+      "name": "Pass saved without numeric coercion",
+      "passed": true
+    },
+    {
+      "actual": "S",
+      "expected": "S",
+      "name": "Switching systems retains ungraded result",
+      "passed": true
+    },
+    {
+      "actual": "3.80",
+      "expected": "3.80",
+      "name": "Switching back retains weighted GPA",
+      "passed": true
+    },
+    {
+      "actual": null,
+      "expected": null,
+      "name": "Grading explanation hidden by default",
+      "passed": true
+    },
+    {
+      "actual": true,
+      "expected": true,
+      "name": "Help icon opens SMU explanation",
+      "passed": true
+    }
+  ],
+  "url": "http://localhost:5173/",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  }
+}

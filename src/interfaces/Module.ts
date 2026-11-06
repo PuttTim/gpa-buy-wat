@@ -1,7 +1,7 @@
-import { PolyGrade, UniGrade } from "./Grade"
+import { Grade } from "./Grade"
 
 export interface Module {
-    name: string | undefined
-    grade: PolyGrade | UniGrade
+    name: string
+    grade: Grade
     credits: number
 }

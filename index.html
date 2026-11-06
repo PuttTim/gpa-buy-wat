@@ -3,8 +3,20 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Set the theme before first paint so dark mode doesn't flash white.
+    try {
+      const theme = localStorage.getItem("theme")
+      if (theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark")
+      }
+    } catch {}
+  </script>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="theme-color" content="#c9b7fb" />
   <meta name="google-site-verification" content="l9kizKyWBNYxVnTeawzbwGtMf41uXExxd9h38clRkF8" />
   <title>GPA Buy Wat? | Singapore University & Polytechnic GPA Calculator</title>
   <meta name="description" content="GPA Calculator Universitites and Polytechnics in Singapore, predict your next semester's GPA with a side of memes!">

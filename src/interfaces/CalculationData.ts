@@ -1,8 +1,8 @@
-import { Group } from "./Group"
-import { Module } from "./Module"
+import { Semester } from "./Semester"
 
 export interface CalculationData {
-    currentGPA: number
+    /** Kept as typed so partial values like "4." survive while editing. */
+    currentGPA: string
     totalCredits: number
-    groups: Group[]
+    semesters: Semester[]
 }

@@ -1,476 +1,508 @@
+import { CircleHelp, Pencil, Trash2 } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 import {
     Accordion,
-    AccordionButton,
-    AccordionIcon,
+    AccordionContent,
     AccordionItem,
-    AccordionPanel,
-    Box,
-    Button,
-    Card,
-    Center,
-    Editable,
-    EditableInput,
-    EditablePreview,
-    FormControl,
-    FormLabel,
-    Heading,
-    HStack,
-    IconButton,
-    Input,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    ModalOverlay,
-    NumberDecrementStepper,
-    NumberIncrementStepper,
-    NumberInput,
-    NumberInputField,
-    NumberInputStepper,
-    Select,
-    useDisclosure,
-    VStack,
-} from "@chakra-ui/react"
-import { useEffect, useState } from "react"
-import { Edit3, Trash2 } from "react-feather"
-import { ResultText } from "../components/ResultText"
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { foodFor } from "@/lib/food"
+import { cn } from "@/lib/utils"
+import { MODULE_COLUMNS, ModuleRow } from "../components/ModuleRow"
+import { NumberField } from "../components/NumberField"
+import { Receipt } from "../components/Receipt"
 import { SelectSystem } from "../components/SelectSystem"
+import { ThemeToggle } from "../components/ThemeToggle"
 import { CalculationData } from "../interfaces/CalculationData"
-import { PolyGrade, UniGrade } from "../interfaces/Grade"
-import { Group } from "../interfaces/Group"
 import { Module } from "../interfaces/Module"
+import { Semester } from "../interfaces/Semester"
+import {
+    createCalculationData,
+    createModule,
+    loadState,
+    MAX_CREDITS,
+    saveState,
+} from "../lib/storage"
+import { SYSTEMS } from "../lib/systems"
+import { calculateGPA, creditsIn } from "../lib/calculation"
+
+type Update = (data: CalculationData) => CalculationData
+
+const formatGPA = (gpa: number | null) => (gpa === null ? "–" : gpa.toFixed(2))
+
+const insertAt = <T,>(items: T[], index: number, item: T) => [
+    ...items.slice(0, index),
+    item,
+    ...items.slice(index),
+]
 
 const Calculator = () => {
-    const [systemIndex, setSystemIndex] = useState(0)
-    const [resultGPA, setResultGPA] = useState(0)
-    const [resultTotalCredits, setResultTotalCredits] = useState(0)
-    const [resultFood, setResultFood] = useState("")
-    const baseCalculationData: CalculationData = {
-        currentGPA: 0,
-        totalCredits: 0,
-        groups: [
-            {
-                name: "Semester 1",
-                modules: [
-                    {
-                        name: "Enter Module Name",
-                        credits: 4,
-                        grade:
-                            systemIndex === 2
-                                ? PolyGrade.A
-                                : UniGrade["A+ / A"],
-                    },
-                ],
-            },
-        ],
-    }
-    const [calculationData, setCalculationData] =
-        useState<CalculationData>(baseCalculationData)
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [groupName, setGroupName] = useState("Semester ?")
+    const [state, setState] = useState(loadState)
+    const { systemIndex } = state
+    const calculationData = state.systems[systemIndex]
+    const system = SYSTEMS[systemIndex]
 
-    const defaultModuleValues: Module = {
-        grade: systemIndex == 2 ? PolyGrade.A : UniGrade["A+ / A"],
-        credits: 4,
-        name: "Enter Module Name",
+    // The new module whose name field should take focus when it appears.
+    const [focusModule, setFocusModule] = useState<{
+        semesterIndex: number
+        moduleIndex: number
+    } | null>(null)
+
+    const [renaming, setRenaming] = useState<{
+        index: number
+        name: string
+    } | null>(null)
+
+    const resultRef = useRef<HTMLElement>(null)
+
+    const [confirmingClear, setConfirmingClear] = useState(false)
+    const [saved, setSaved] = useState(true)
+    useEffect(() => setSaved(saveState(state)), [state])
+
+    const replaceSystem = (index: number, update: Update) => {
+        setState(current => ({
+            ...current,
+            systems: current.systems.map((data, i) =>
+                i === index ? update(data) : data,
+            ),
+        }))
     }
 
-    const calculateTotalCredits = (calculationData: CalculationData) => {
-        return calculationData.groups.reduce((prev, group) => {
-            return (
-                group.modules.reduce(
-                    (prev, module) => module.credits + prev,
-                    0,
-                ) + prev
-            )
-        }, calculationData.totalCredits)
-    }
+    // Undoing "Start over" restores a snapshot, so it can't survive later edits.
+    const startOverToast = useRef<string | number | null>(null)
 
-    const calculateCumulativeGPA = (calculationData: CalculationData) => {
-        let totalCredits = calculationData.totalCredits
-        let totalGrade =
-            calculationData.currentGPA * calculationData.totalCredits
-        calculationData.groups.forEach(group => {
-            group.modules.forEach(module => {
-                totalCredits += module.credits
-                totalGrade += parseFloat(module.grade) * module.credits
-            })
-        })
-        return totalGrade / totalCredits
-    }
-
-    const calculateFood = (gpa: number) => {
-        if (gpa === 5) {
-            return "McSpicy 🍔"
-        } else if (gpa >= 4) {
-            return "Nasi Lemak 🍚"
-        } else if (gpa >= 3.5) {
-            return "Chicken Rice 🍗"
-        } else if (gpa >= 2.5) {
-            return "Bubble Tea 🧋"
+    const updateData = (update: Update) => {
+        if (startOverToast.current !== null) {
+            toast.dismiss(startOverToast.current)
+            startOverToast.current = null
         }
-
-        return "Ice 🧊"
+        replaceSystem(systemIndex, update)
     }
 
-    const calculateGPAPerGroup = (group: Group) => {
-        let totalCredits = 0
-        let totalGrade = 0
-        group.modules.forEach(module => {
-            totalCredits += module.credits
-            totalGrade += parseFloat(module.grade) * module.credits
+    const updateSemester = (
+        semesterIndex: number,
+        update: (semester: Semester) => Semester,
+    ) => {
+        updateData(data => ({
+            ...data,
+            semesters: data.semesters.map((semester, i) =>
+                i === semesterIndex ? update(semester) : semester,
+            ),
+        }))
+    }
+
+    const updateModule = (
+        semesterIndex: number,
+        moduleIndex: number,
+        changes: Partial<Module>,
+    ) => {
+        updateSemester(semesterIndex, semester => ({
+            ...semester,
+            modules: semester.modules.map((module, i) =>
+                i === moduleIndex ? { ...module, ...changes } : module,
+            ),
+        }))
+    }
+
+    const addModule = (semesterIndex: number) => {
+        setFocusModule({
+            semesterIndex,
+            moduleIndex: calculationData.semesters[semesterIndex].modules.length,
         })
-        return totalGrade / totalCredits
+        updateSemester(semesterIndex, semester => ({
+            ...semester,
+            modules: [...semester.modules, createModule(systemIndex)],
+        }))
     }
 
-    useEffect(() => {
-        setCalculationData(baseCalculationData)
-    }, [systemIndex])
-
-    useEffect(() => {
-        console.log(calculationData, "calculationData")
-        // console.log(systemIndex, "systemIndex")
-        // console.log(Object.keys(UniGrade))
-        // console.log(Object.values(UniGrade))
-    }, [systemIndex, calculationData])
-
-    const updateModuleGrade = (
-        points: string,
-        groupIndex: number,
-        moduleIndex: number,
-    ) => {
-        // console.log(points, groupIndex, moduleIndex)
-        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
-
-        calculationData_copy.groups[groupIndex].modules[moduleIndex].grade =
-            points
-
-        setCalculationData(calculationData_copy)
+    const addSemester = () => {
+        const count = calculationData.semesters.length
+        setFocusModule({ semesterIndex: count, moduleIndex: 0 })
+        updateData(data => ({
+            ...data,
+            semesters: [
+                ...data.semesters,
+                {
+                    name: `Semester ${count + 1}`,
+                    modules: [createModule(systemIndex)],
+                },
+            ],
+        }))
     }
 
-    const updateModuleCredits = (
-        credits: string,
-        groupIndex: number,
-        moduleIndex: number,
-    ) => {
-        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
-
-        calculationData_copy.groups[groupIndex].modules[moduleIndex].credits =
-            parseInt(credits)
-
-        setCalculationData(calculationData_copy)
+    const commitRename = () => {
+        if (!renaming) return
+        const name = renaming.name.trim()
+        if (name) updateSemester(renaming.index, s => ({ ...s, name }))
+        setRenaming(null)
     }
 
-    const updateModuleName = (
-        name: string,
-        groupIndex: number,
-        moduleIndex: number,
-    ) => {
-        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
-
-        calculationData_copy.groups[groupIndex].modules[moduleIndex].name = name
-
-        setCalculationData(calculationData_copy)
+    /** Only the latest removal can be undone, so its position is still valid. */
+    const removeWithUndo = (message: string, remove: Update, restore: Update) => {
+        const index = systemIndex
+        setFocusModule(null)
+        setRenaming(null)
+        toast.dismiss()
+        startOverToast.current = null
+        replaceSystem(index, remove)
+        return toast(message, {
+            action: {
+                label: "Undo",
+                onClick: () => replaceSystem(index, restore),
+            },
+        })
     }
 
-    const deleteModule = (groupIndex: number, moduleIndex: number) => {
-        const calculationData_copy = JSON.parse(JSON.stringify(calculationData))
-
-        calculationData_copy.groups[groupIndex].modules.splice(moduleIndex, 1)
-
-        setCalculationData(calculationData_copy)
+    const deleteModule = (semesterIndex: number, moduleIndex: number) => {
+        const module = calculationData.semesters[semesterIndex].modules[moduleIndex]
+        const withModules = (
+            data: CalculationData,
+            change: (modules: Module[]) => Module[],
+        ) => ({
+            ...data,
+            semesters: data.semesters.map((s, i) =>
+                i === semesterIndex ? { ...s, modules: change(s.modules) } : s,
+            ),
+        })
+        removeWithUndo(
+            `Deleted ${module.name.trim() || "module"}`,
+            data =>
+                withModules(data, modules =>
+                    modules.filter((_, i) => i !== moduleIndex),
+                ),
+            data =>
+                withModules(data, modules =>
+                    insertAt(modules, moduleIndex, module),
+                ),
+        )
     }
 
-    useEffect(() => {
-        setResultGPA(calculateCumulativeGPA(calculationData))
-        setResultTotalCredits(calculateTotalCredits(calculationData))
-    }, [calculationData, systemIndex])
+    const deleteSemester = (semesterIndex: number) => {
+        const semester = calculationData.semesters[semesterIndex]
+        removeWithUndo(
+            `Deleted ${semester.name}`,
+            data => ({
+                ...data,
+                semesters: data.semesters.filter((_, i) => i !== semesterIndex),
+            }),
+            data => ({
+                ...data,
+                semesters: insertAt(data.semesters, semesterIndex, semester),
+            }),
+        )
+    }
 
-    useEffect(() => {
-        setResultFood(calculateFood(resultGPA))
-    }, [resultGPA])
+    const startOver = () => {
+        const previous = calculationData
+        startOverToast.current = removeWithUndo(
+            `Cleared ${system.name}`,
+            () => createCalculationData(systemIndex),
+            () => previous,
+        )
+    }
+
+    const allModules = calculationData.semesters.flatMap(s => s.modules)
+    const rawGPA = calculateGPA(
+        allModules,
+        calculationData.totalCredits,
+        parseFloat(calculationData.currentGPA) || 0,
+    )
+    // Cap only the cumulative result: SMU A+ still contributes 4.3 points.
+    const resultGPA = rawGPA === null ? null : Math.min(rawGPA, system.maxGPA)
+
+    const barFood = resultGPA === null ? null : foodFor(resultGPA)
 
     return (
-        <VStack spacing="16px" align="start">
-            <Heading pt="8px" fontSize="3xl">
-                Select Grading System
-            </Heading>
-            <SelectSystem setIndex={setSystemIndex} />
-            <Heading pt="8px" fontSize="3xl">
-                Current GPA & Credits
-            </Heading>
-            <HStack spacing="16px">
-                <Input
-                    w="50%"
-                    placeholder="Current GPA"
-                    type="number"
-                    value={calculationData.currentGPA || ""}
-                    onChange={e => {
-                        setCalculationData({
-                            ...calculationData,
-                            currentGPA: Number.isNaN(parseFloat(e.target.value))
-                                ? 0
-                                : parseFloat(e.target.value),
-                        })
-                    }}
-                />
-                <NumberInput
-                    w="50%"
-                    value={calculationData.totalCredits || ""}
-                    onChange={newValue => {
-                        setCalculationData({
-                            ...calculationData,
-                            totalCredits: Number.isNaN(parseInt(newValue))
-                                ? 0
-                                : parseInt(newValue),
-                        })
-                    }}>
-                    <NumberInputField placeholder="Total Credits" />
-                    <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                    </NumberInputStepper>
-                </NumberInput>
-            </HStack>
-            <Heading pt="16px" fontSize="3xl">
-                Calculate GPA
-            </Heading>
-            <Card
-                w="100%"
-                p="16px"
-                bg="customGrey.100"
-                borderColor="customGrey.900"
-                variant="outline">
-                <Accordion allowMultiple defaultValue={1}>
-                    {calculationData.groups.map((group, groupIndex) => (
-                        <AccordionItem border="none" mb="16px" key={groupIndex}>
-                            <AccordionButton
-                                py="8px"
-                                px="12px"
-                                bg="customIndigo.150"
-                                borderRadius={8}
-                                _hover={{ bg: "customIndigo.250" }}
-                                _active={{ bg: "customIndigo.150" }}>
-                                <HStack w="100%" justifyContent="space-between">
-                                    <Center gap="8px">
-                                        <Heading
-                                            fontSize="2xl"
-                                            fontWeight="medium">
-                                            {group.name}
-                                        </Heading>
-                                    </Center>
-                                    <Center gap="8px">
-                                        <Heading
-                                            fontSize="2xl"
-                                            fontWeight="medium">
-                                            {calculateGPAPerGroup(
-                                                group,
-                                            ).toFixed(2)}
-                                        </Heading>
-                                        <AccordionIcon />
-                                    </Center>
-                                </HStack>
-                            </AccordionButton>
+        <>
+            <header className="perforated bg-primary pt-[env(safe-area-inset-top,0px)] pb-1 text-primary-foreground">
+                <div className="m-auto grid max-w-[1100px] grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[1fr_auto_auto] lg:px-6">
+                    <div className="flex items-center gap-2.5">
+                        <img
+                            src="/favicon.svg"
+                            alt=""
+                            className="size-8 [image-rendering:pixelated]"
+                        />
+                        <h1 className="font-mono text-xl uppercase">GPA buy wat?</h1>
+                    </div>
+                    <SelectSystem
+                        index={systemIndex}
+                        setIndex={index => {
+                            setFocusModule(null)
+                            setRenaming(null)
+                            setState(current => ({
+                                ...current,
+                                systemIndex: index,
+                            }))
+                        }}
+                    />
+                    <ThemeToggle />
+                </div>
+            </header>
 
-                            <AccordionPanel bg="customGrey.100">
-                                {group.modules.map((module, moduleIndex) => (
-                                    <Box
-                                        w="100%"
-                                        h="auto"
-                                        mb="2"
-                                        key={moduleIndex}>
-                                        <Editable
-                                            onChange={value => {
-                                                updateModuleName(
-                                                    value,
-                                                    groupIndex,
-                                                    moduleIndex,
-                                                )
+            <div className="m-auto max-w-[1100px] px-4 pt-4 lg:px-6 lg:pt-6">
+            <main className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
+                <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
+                    <div className="-mb-2 lg:-mb-3">
+                        <h2 className="font-mono text-base uppercase">So far</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Your GPA and credits from past semesters
+                        </p>
+                    </div>
+                    <Card>
+                        <CardContent className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="current-gpa" className="mb-1.5">
+                                    GPA
+                                </Label>
+                                <NumberField
+                                    id="current-gpa"
+                                    placeholder={`Up to ${system.maxGPA.toFixed(2)}`}
+                                    decimals
+                                    max={system.maxGPA}
+                                    value={calculationData.currentGPA}
+                                    onChange={currentGPA =>
+                                        updateData(data => ({ ...data, currentGPA }))
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="total-credits" className="mb-1.5">
+                                    Credits
+                                </Label>
+                                <NumberField
+                                    id="total-credits"
+                                    placeholder="0"
+                                    max={MAX_CREDITS}
+                                    value={
+                                        calculationData.totalCredits
+                                            ? String(calculationData.totalCredits)
+                                            : ""
+                                    }
+                                    onChange={value =>
+                                        updateData(data => ({
+                                            ...data,
+                                            totalCredits: parseInt(value) || 0,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="-mb-2 mt-2 flex items-center gap-2 lg:-mb-3">
+                        <h2 className="font-mono text-base uppercase">Your order</h2>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button
+                                    type="button"
+                                    aria-label="Grading help"
+                                    className="rounded text-muted-foreground hover:text-foreground">
+                                    <CircleHelp className="size-4" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" className="max-w-[calc(100vw-2rem)] text-sm">
+                                <p>{system.gradingHelp}</p>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <Accordion
+                        type="multiple"
+                        className="gap-4 lg:gap-6"
+                        value={calculationData.semesters.flatMap((semester, i) =>
+                            semester.collapsed ? [] : [String(i)],
+                        )}
+                        onValueChange={open =>
+                            updateData(data => ({
+                                ...data,
+                                semesters: data.semesters.map((semester, i) => ({
+                                    ...semester,
+                                    collapsed: !open.includes(String(i)),
+                                })),
+                            }))
+                        }>
+                        {calculationData.semesters.map((semester, semesterIndex) => (
+                            <AccordionItem
+                                key={semesterIndex}
+                                value={String(semesterIndex)}
+                                className="rounded-xl bg-card p-4 ring-1 ring-foreground/10 not-last:border-b-0">
+                                <div className="flex items-center gap-1">
+                                    {renaming?.index === semesterIndex ? (
+                                        <Input
+                                            autoFocus
+                                            aria-label="Semester name"
+                                            className="font-semibold"
+                                            value={renaming.name}
+                                            onFocus={e => e.target.select()}
+                                            onChange={e =>
+                                                setRenaming({
+                                                    index: semesterIndex,
+                                                    name: e.target.value,
+                                                })
+                                            }
+                                            onBlur={commitRename}
+                                            onKeyDown={e => {
+                                                if (e.key === "Enter") commitRename()
+                                                if (e.key === "Escape") setRenaming(null)
                                             }}
-                                            value={
-                                                module.name === undefined
-                                                    ? "Enter a module name"
-                                                    : module.name
-                                            }>
-                                            <EditablePreview />
-                                            <EditableInput />
-                                        </Editable>
-                                        <HStack
-                                            gap="8px"
-                                            justifyContent="space-around">
-                                            <Select
-                                                key={moduleIndex}
-                                                onChange={e => {
-                                                    console.log(e.target.value)
+                                        />
+                                    ) : (
+                                        <>
+                                            <AccordionTrigger className="min-w-0 items-center gap-3 py-1 hover:no-underline">
+                                                <span className="min-w-0 flex-1 truncate text-base font-semibold">
+                                                    {semester.name}
+                                                </span>
+                                                <span className="shrink-0 font-mono text-base">
+                                                    {formatGPA(calculateGPA(semester.modules))}
+                                                </span>
+                                            </AccordionTrigger>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-muted-foreground"
+                                                aria-label={`Rename ${semester.name}`}
+                                                onClick={() =>
+                                                    setRenaming({
+                                                        index: semesterIndex,
+                                                        name: semester.name,
+                                                    })
+                                                }>
+                                                <Pencil />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-muted-foreground hover:text-destructive"
+                                                aria-label={`Delete ${semester.name}`}
+                                                onClick={() => deleteSemester(semesterIndex)}>
+                                                <Trash2 />
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
 
-                                                    updateModuleGrade(
-                                                        e.target.value,
-                                                        groupIndex,
-                                                        moduleIndex,
-                                                    )
-                                                }}
-                                                value={module.grade}>
-                                                {systemIndex === 2
-                                                    ? Object.keys(
-                                                          PolyGrade,
-                                                      ).map((key, index) => (
-                                                          <option
-                                                              key={index}
-                                                              value={
-                                                                  PolyGrade[
-                                                                      key as keyof typeof PolyGrade
-                                                                  ]
-                                                              }>
-                                                              {key}
-                                                          </option>
-                                                      ))
-                                                    : Object.keys(UniGrade).map(
-                                                          (key, index) => (
-                                                              <option
-                                                                  key={index}
-                                                                  value={
-                                                                      UniGrade[
-                                                                          key as keyof typeof UniGrade
-                                                                      ]
-                                                                  }>
-                                                                  {key}
-                                                              </option>
-                                                          ),
-                                                      )}
-                                            </Select>
-                                            <Input
-                                                type="number"
-                                                value={module.credits}
-                                                onChange={e =>
-                                                    updateModuleCredits(
-                                                        e.target.value,
-                                                        groupIndex,
-                                                        moduleIndex,
-                                                    )
+                                <AccordionContent className="px-0.5 pt-3 pb-0.5">
+                                    <div
+                                        aria-hidden="true"
+                                        className={cn(
+                                            "mb-1.5 grid gap-1.5 text-xs font-medium text-muted-foreground sm:gap-2",
+                                            MODULE_COLUMNS,
+                                        )}>
+                                        <span>Module</span>
+                                        <span>Grade</span>
+                                        <span>Credits</span>
+                                    </div>
+                                    <ul className="flex flex-col gap-2">
+                                        {semester.modules.map((module, moduleIndex) => (
+                                            <ModuleRow
+                                                key={moduleIndex}
+                                                id={`s${semesterIndex}-m${moduleIndex}`}
+                                                module={module}
+                                                grades={system.grades}
+                                                autoFocus={
+                                                    focusModule?.semesterIndex === semesterIndex &&
+                                                    focusModule?.moduleIndex === moduleIndex
+                                                }
+                                                onFocused={() =>
+                                                    focusModule && setFocusModule(null)
+                                                }
+                                                onChange={changes =>
+                                                    updateModule(semesterIndex, moduleIndex, changes)
+                                                }
+                                                onDelete={() =>
+                                                    deleteModule(semesterIndex, moduleIndex)
                                                 }
                                             />
-                                            <IconButton
-                                                bg="customRed.100"
-                                                variant="solid"
-                                                p="8px"
-                                                size="md"
-                                                _hover={{ bg: "customRed.500" }}
-                                                _active={{
-                                                    bg: "customRed.100",
-                                                }}
-                                                icon={<Trash2 />}
-                                                aria-label={""}
-                                                onClick={() =>
-                                                    deleteModule(
-                                                        groupIndex,
-                                                        moduleIndex,
-                                                    )
-                                                }></IconButton>
-                                        </HStack>
-                                    </Box>
-                                ))}
+                                        ))}
+                                    </ul>
+                                    <Button
+                                        className="mt-4 w-full"
+                                        onClick={() => addModule(semesterIndex)}>
+                                        Add module
+                                    </Button>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
 
-                                <Button
-                                    w="100%"
-                                    mt="16px"
-                                    variant="outline"
-                                    borderWidth="2px"
-                                    borderColor="customIndigo.250"
-                                    color="customIndigo.100"
-                                    _hover={{
-                                        bg: "customIndigo.500",
-                                        borderColor: "customIndigo.500",
-                                    }}
-                                    _active={{
-                                        bg: "customIndigo.250",
-                                        borderColor: "customIndigo.250",
-                                    }}
-                                    onClick={() => {
-                                        setCalculationData(calculationData => ({
-                                            ...calculationData,
-                                            groups: calculationData.groups.map(
-                                                (group, index) => {
-                                                    if (index != groupIndex)
-                                                        return group
-                                                    return {
-                                                        ...group,
-                                                        modules: [
-                                                            ...group.modules,
-                                                            defaultModuleValues,
-                                                        ],
-                                                    }
-                                                },
-                                            ),
-                                        }))
-                                    }}>
-                                    Add Module
-                                </Button>
-                            </AccordionPanel>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-                <Button
-                    bg="customIndigo.500"
-                    w="100%"
-                    _hover={{
-                        bg: "customIndigo.500",
-                        borderColor: "customIndigo.500",
-                    }}
-                    _active={{
-                        bg: "customIndigo.250",
-                        borderColor: "customIndigo.250",
-                    }}
-                    onClick={onOpen}>
-                    Add Group
-                </Button>
-            </Card>
-            <ResultText header="Your GPA: " text={resultGPA.toString()} />
-            <ResultText
-                header="Total Credits: "
-                text={resultTotalCredits.toString()}
-            />
-            <ResultText header="You can buy " text={resultFood} />
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Create A Group</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody pb={6}>
-                        <FormControl>
-                            <Input
-                                placeholder="Group name"
-                                value={groupName}
-                                onChange={e => setGroupName(e.target.value)}
-                            />
-                        </FormControl>
-                    </ModalBody>
 
-                    <ModalFooter>
-                        <Button
-                            colorScheme="blue"
-                            mr={3}
-                            onClick={() => {
-                                setCalculationData(calculationData => ({
-                                    ...calculationData,
-                                    groups: [
-                                        ...calculationData.groups,
-                                        {
-                                            name: groupName,
-                                            modules: [defaultModuleValues],
-                                        },
-                                    ],
-                                }))
-                                onClose()
-                            }}>
-                            Save
+                    <div className="flex gap-3">
+                        <Button variant="outline" className="flex-1" onClick={addSemester}>
+                            Add semester
                         </Button>
-                        <Button onClick={onClose}>Cancel</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </VStack>
+                        <Popover open={confirmingClear} onOpenChange={setConfirmingClear}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="text-muted-foreground hover:text-destructive">
+                                    Start over
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-auto gap-3 p-3">
+                                <p className="font-medium">Clear everything in {system.name}?</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setConfirmingClear(false)}>
+                                        Keep
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => {
+                                            setConfirmingClear(false)
+                                            startOver()
+                                        }}>
+                                        Clear
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <p role="status" className="text-sm text-destructive empty:hidden">
+                        {!saved && "Couldn't save on this device"}
+                    </p>
+                </div>
+
+                {/* Sticks to the bottom of a phone's screen, then becomes the top of the receipt. */}
+                <button
+                    type="button"
+                    aria-label="View receipt"
+                    onClick={() => resultRef.current?.scrollIntoView({ behavior: "smooth" })}
+                    className="receipt-stub-shadow sticky bottom-0 z-10 -mb-[17px] lg:hidden">
+                    <div className="receipt-stub flex items-center justify-between gap-3 bg-paper px-5 pt-4 pb-[max(0.625rem,env(safe-area-inset-bottom))] font-mono text-paper-ink uppercase">
+                        <span className="flex min-w-0 items-center gap-2">
+                            {barFood && (
+                                <img
+                                    src={barFood.icon}
+                                    alt=""
+                                    className="size-8 shrink-0 [image-rendering:pixelated]"
+                                />
+                            )}
+                            <span className="truncate text-[13px]">
+                                {barFood?.name ?? "Total GPA"}
+                            </span>
+                        </span>
+                        <span className="shrink-0 text-lg leading-7">{formatGPA(resultGPA)}</span>
+                    </div>
+                </button>
+
+                <Receipt
+                    ref={resultRef}
+                    system={system}
+                    data={calculationData}
+                    credits={calculationData.totalCredits + creditsIn(allModules)}
+                    gpa={resultGPA}
+                    prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}
+                />
+            </main>
+
+            </div>
+        </>
     )
 }
 

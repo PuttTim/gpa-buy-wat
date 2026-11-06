@@ -1,95 +1,39 @@
-import {
-    Box,
-    Button,
-    Divider,
-    Flex,
-    HStack,
-    StackDivider,
-    Tab,
-    TabList,
-    Tabs,
-    useTab,
-    VStack,
-} from "@chakra-ui/react"
-import ReactGA from "react-ga4"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { trackSystemSelected } from "@/lib/analytics"
+import { SYSTEMS, TAB_ORDER } from "@/lib/systems"
 
 interface SelectSystemProps {
+    index: number
     setIndex: (index: number) => void
 }
 
-export const SelectSystem = (props: SelectSystemProps) => {
-    const selectedTabSx = {
-        color: "customWhite.100",
-        borderColor: "customIndigo.500",
-        bgColor: "customIndigo.500",
-    }
-
-    const activeTabSx = {
-        bg: "customIndigo.250",
-        borderColor: "customIndigo.250",
-    }
-
-    const hoverTabSx = {
-        bg: "customIndigo.500",
-        borderColor: "customIndigo.500",
-    }
-
-    const tabSx = {
-        w: "100%",
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: "customIndigo.250",
-        color: "customIndigo.100",
-    }
-    return (
-        <Box w="100%" px="12px" py="8px" bg="customGrey.500" borderRadius={8}>
-            <Tabs
-                w="100%"
-                variant="unstyled"
-                onChange={index => {
-                    props.setIndex(index)
-                    ReactGA.event({
-                        category: "Click",
-                        action: "select_system",
-                        value: index,
-                    })
-                }}>
-                <TabList justifyContent="space-between" gap="8px">
-                    <Tab
-                        {...tabSx}
-                        _selected={selectedTabSx}
-                        _hover={hoverTabSx}
-                        _active={activeTabSx}>
-                        NUS
-                    </Tab>
-                    <Box
-                        w="4px"
-                        my="0px"
-                        bg="customGrey.900"
-                        borderRadius={8}
-                    />
-                    <Tab
-                        {...tabSx}
-                        _selected={selectedTabSx}
-                        _hover={hoverTabSx}
-                        _active={activeTabSx}>
-                        NTU
-                    </Tab>
-                    <Box
-                        w="2px"
-                        my="0px"
-                        bg="customGrey.900"
-                        borderRadius={8}
-                    />
-                    <Tab
-                        {...tabSx}
-                        _selected={selectedTabSx}
-                        _hover={hoverTabSx}
-                        _active={activeTabSx}>
-                        Poly
-                    </Tab>
-                </TabList>
-            </Tabs>
-        </Box>
-    )
-}
+export const SelectSystem = ({ index, setIndex }: SelectSystemProps) => (
+    <Tabs
+        className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto"
+        value={String(index)}
+        onValueChange={value => {
+            setIndex(Number(value))
+            trackSystemSelected(Number(value))
+        }}>
+        <TabsList
+            aria-label="Grading system"
+            className="relative grid w-full grid-cols-4 bg-primary-foreground/15 group-data-horizontal/tabs:h-10 sm:w-72">
+            {/* White in both themes, so a label never needs to change colour as it moves. */}
+            <span
+                aria-hidden="true"
+                className="slide absolute inset-y-[3px] left-[3px] w-[calc((100%-6px)/4)] rounded-md bg-white"
+                style={{
+                    transform: `translateX(${TAB_ORDER.indexOf(index) * 100}%)`,
+                }}
+            />
+            {TAB_ORDER.map(i => (
+                <TabsTrigger
+                    key={i}
+                    value={String(i)}
+                    className="z-10 font-mono text-[13px] font-normal text-primary-foreground uppercase transition-none hover:text-primary-foreground data-active:bg-transparent data-active:text-primary-foreground dark:text-primary-foreground dark:hover:text-primary-foreground dark:data-active:border-transparent dark:data-active:bg-transparent dark:data-active:text-primary-foreground group-data-[variant=default]/tabs-list:data-active:shadow-none">
+                    {SYSTEMS[i].name}
+                </TabsTrigger>
+            ))}
+        </TabsList>
+    </Tabs>
+)

@@ -1,6 +1,7 @@
 import { Module } from "./Module"
 
-export interface Group {
+export interface Semester {
     name: string
     modules: Module[]
+    collapsed?: boolean
 }

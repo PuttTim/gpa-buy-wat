@@ -1,10 +1,216 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-* {
-    font-family: "DM Sans", sans-serif;
+/* Basic Latin only; other scripts fall back to Manrope. */
+@font-face {
+    font-family: "Monocraft";
+    src: url("/fonts/Monocraft.woff2") format("woff2");
+    font-display: swap;
 }
 
-html, body {
-    height: 100%;
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-sans: "Manrope", system-ui, sans-serif;
+    --font-heading: var(--font-sans);
+    --font-mono: "Monocraft", "Manrope", monospace;
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-paper: var(--paper);
+    --color-paper-ink: var(--paper-ink);
+    --color-paper-faint: var(--paper-faint);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+    color-scheme: light;
+    --radius: 0.625rem;
+    --background: oklch(0.95 0.014 295);
+    --foreground: oklch(0.2 0.03 295);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.2 0.03 295);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.2 0.03 295);
+    /* Pastel purple: dark text on it, never white. */
+    --primary: oklch(0.82 0.1 295);
+    --primary-edge: oklch(0.66 0.13 295);
+    --primary-foreground: oklch(0.27 0.09 295);
+    --secondary: oklch(0.92 0.03 295);
+    --secondary-foreground: oklch(0.33 0.1 295);
+    --muted: oklch(0.91 0.018 295);
+    --muted-foreground: oklch(0.46 0.025 295);
+    --accent: oklch(0.92 0.03 295);
+    --accent-foreground: oklch(0.33 0.1 295);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.88 0.018 295);
+    --input: oklch(0.86 0.02 295);
+    --ring: oklch(0.72 0.13 295);
+    /* Thermal paper: the same in both themes, like a real slip. */
+    --paper: oklch(0.975 0.008 90);
+    --paper-ink: oklch(0.27 0.012 280);
+    --paper-faint: oklch(0.45 0.012 280);
+}
+
+.dark {
+    color-scheme: dark;
+    --background: oklch(0.18 0.018 295);
+    --foreground: oklch(0.96 0.008 295);
+    --card: oklch(0.235 0.022 295);
+    --card-foreground: oklch(0.96 0.008 295);
+    --popover: oklch(0.235 0.022 295);
+    --popover-foreground: oklch(0.96 0.008 295);
+    --primary: oklch(0.82 0.1 295);
+    --primary-edge: oklch(0.62 0.13 295);
+    --primary-foreground: oklch(0.27 0.09 295);
+    --secondary: oklch(0.32 0.05 295);
+    --secondary-foreground: oklch(0.92 0.04 295);
+    --muted: oklch(0.29 0.025 295);
+    --muted-foreground: oklch(0.76 0.02 295);
+    --accent: oklch(0.32 0.05 295);
+    --accent-foreground: oklch(0.92 0.04 295);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.72 0.13 295);
+}
+
+:root {
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.slide {
+    transition: transform 200ms var(--ease-in-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slide {
+        transition: none;
+    }
+}
+
+/* A strip of paper. On a phone its top joins the sticky stub, so only desktop tears both ends. */
+.receipt {
+    mask:
+        linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat,
+        conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / 16px 8px repeat-x;
+}
+
+@media (min-width: 64rem) {
+    .receipt-shadow {
+        filter: drop-shadow(0 6px 10px oklch(0.2 0.03 295 / 0.16));
+    }
+
+    .receipt {
+        mask:
+            linear-gradient(#000 0 0) center / 100% calc(100% - 14px) no-repeat,
+            conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / 16px 8px repeat-x,
+            conic-gradient(from -45deg at 50% 100%, #000 90deg, #0000 0) bottom / 16px 8px repeat-x;
+    }
+}
+
+/* The receipt's dashed rule, as a row of perforations along the header. */
+.perforated {
+    position: relative;
+}
+
+.perforated::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--primary-foreground) 0 6px,
+        transparent 6px 12px
+    );
+    opacity: 0.45;
+}
+
+/* The top of the receipt on a phone, torn along its upper edge. */
+.receipt-stub-shadow {
+    filter: drop-shadow(0 -3px 8px oklch(0.2 0.03 295 / 0.22));
+}
+
+.receipt-stub {
+    mask:
+        linear-gradient(#000 0 0) bottom / 100% calc(100% - 7px) no-repeat,
+        conic-gradient(from 135deg at 50% 0, #000 90deg, #0000 0) top / 16px 8px repeat-x;
+}
+
+/* Sonner sets its own font stack; use the app's. */
+html [data-sonner-toaster] {
+    font-family: var(--font-sans);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    html {
+        @apply font-sans;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+        /* Keeps focused fields clear of the phone's results bar. */
+        scroll-padding-bottom: 88px;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+    /* Controls respond at once and their labels can't be long-press selected. */
+    button,
+    a,
+    [role="button"],
+    [role="tab"] {
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    /* No rings: mouse and touch show nothing, and fields darken their border.
+       Keyboard users still need to see where they are on buttons and tabs. */
+    button:focus-visible,
+    [role="tab"]:focus-visible,
+    a:focus-visible {
+        outline: 2px solid var(--foreground);
+        outline-offset: 2px;
+    }
+    /* shadcn's controls are compact; give fingers a usable target. */
+    @media (pointer: coarse) {
+        [data-slot="input"],
+        [data-slot="native-select"],
+        [data-slot="button"],
+        [data-slot="tabs-trigger"] {
+            min-height: 44px;
+        }
+        [data-slot="button"][data-size^="icon"] {
+            min-width: 44px;
+        }
+        [data-slot="tabs-list"] {
+            height: auto !important;
+        }
+    }
 }
