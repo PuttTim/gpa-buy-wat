@@ -35,3 +35,7 @@ dist-ssr
 
 # Cloudflare build output
 .cloudflare/
+
+# Local pnpm installs (the repo uses npm and package-lock.json)
+pnpm-lock.yaml
+pnpm-workspace.yaml
