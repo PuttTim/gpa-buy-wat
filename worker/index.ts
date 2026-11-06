@@ -120,7 +120,7 @@ export class GPABuyWhatImports {
 const MAX_PARSE_BYTES = 32 * 1024
 const MAX_TEXT = 10_000
 const MAX_MODULES = 60
-const MODULE_CODE = /^[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
+const MODULE_CODE = /^([A-Z]{2,4}-)?[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
 const CLAIRIC = "@cf/cloudflare/clairic"
 
 const readFields = (env: Env, text: string, fields: Record<string, unknown>) =>
@@ -155,7 +155,7 @@ const parse = async (request: Request, env: Env) => {
                 module_codes: {
                     type: "list",
                     items: "text",
-                    instructions: "Every course or module code, such as CS2030, SC1003 or IS111, in the order they appear",
+                    instructions: "Every course or module code, such as CS2030, SC1003, IS111 or COR-STAT1202, in the order they appear",
                 },
             })
             const listed: unknown[] = found?.answers?.module_codes?.value ?? []

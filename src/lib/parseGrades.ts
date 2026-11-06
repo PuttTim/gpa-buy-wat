@@ -24,10 +24,11 @@ export interface LocalParse {
     needsAI: boolean
 }
 
-/** Module codes: NUS CS2030S, NTU SC1003, SMU IS111, Poly ST0503. Not "AY2024". */
-export const MODULE_CODE = /\b(?!AY\d)([A-Z]{2,4})\s?(\d{3,4})([A-Z]{0,2})\b/gi
+/** Module codes: NUS CS2030S, NTU SC1003, SMU IS111 or COR-STAT1202, Poly ST0503. Not "AY2024". */
+export const MODULE_CODE = /\b(?!AY\d)(?:[A-Z]{2,4}-)?([A-Z]{2,4})\s?(\d{3,4})([A-Z]{0,2})\b/gi
 const SEMESTER_LINE = /\b(sem(ester)?|term|trimester|year|ay)\b/i
 const NUMBER = /^\d{1,2}(\.\d+)?$/
+const CREDIT_UNIT = /^(AU|AUS|MC|MCS|CU|CUS|UNITS?|CREDITS?|CR)$/i
 // Words in grade labels that describe a grade rather than name it.
 const QUALIFIERS = new Set(["LEGACY", "UNGRADED"])
 
@@ -65,7 +66,8 @@ export const parseLocally = (systemIndex: number, text: string): LocalParse => {
     let current: ParsedSemester | null = null
     let needsAI = false
 
-    for (const line of text.split(/\r?\n/)) {
+    // ";" separates modules too: "IT1001 A; IT1002 B+".
+    for (const line of text.split(/\r?\n|;/)) {
         const codes = [...line.matchAll(MODULE_CODE)]
         if (codes.length === 0) {
             const header = line.trim()
@@ -75,7 +77,18 @@ export const parseLocally = (systemIndex: number, text: string): LocalParse => {
             }
             continue
         }
-        // One module per line; a second code on the line (a prerequisite, say) is ignored.
+        if (!current) {
+            current = { name: "Semester 1", modules: [] }
+            semesters.push(current)
+        }
+        // Several modules in one sentence ("A+ for SC1003, got B for SC1005"): which grade
+        // goes with which code isn't safe to guess here, so the AI reads the line.
+        if (codes.length > 1) {
+            needsAI = true
+            for (const code of codes)
+                current.modules.push({ code: normaliseCode(code[0]), grade: null, credits: null, unsure: true })
+            continue
+        }
         const [match] = codes
         const rest = (line.slice(0, match.index) + " " + line.slice(match.index! + match[0].length))
             .split(/[\s,;:|]+/)
@@ -86,14 +99,17 @@ export const parseLocally = (systemIndex: number, text: string): LocalParse => {
         for (let i = rest.length - 1; i >= 0 && grade === null; i--) {
             if (!NUMBER.test(rest[i])) grade = aliases.get(compact(rest[i])) ?? null
         }
-        const number = rest.find(token => NUMBER.test(token))
-        const credits = number && Number(number) > 0 && Number(number) <= 40 ? Number(number) : null
+        // Credits: the number next to a unit word ("AU 3", "6 CU"), else the last number,
+        // so a number in the title ("Mathematics 1") isn't taken.
+        const numbered = rest.flatMap((token, i) => (NUMBER.test(token) ? [i] : []))
+        const at =
+            numbered.find(i => CREDIT_UNIT.test(rest[i - 1] ?? "")) ??
+            numbered.find(i => CREDIT_UNIT.test(rest[i + 1] ?? "")) ??
+            numbered.at(-1)
+        const value = at === undefined ? null : Number(rest[at])
+        const credits = value !== null && value > 0 && value <= 40 ? value : null
 
         if (grade === null) needsAI = true
-        if (!current) {
-            current = { name: "Semester 1", modules: [] }
-            semesters.push(current)
-        }
         // "B+ (S/U)": the grade may not count, so let the user decide.
         const unsure = grade === null || /\bS\s*\/\s*U\b|\bSU'?d\b/i.test(line)
         current.modules.push({ code: normaliseCode(match[0]), grade, credits, unsure })
@@ -133,11 +149,9 @@ export const parseWithAI = async (
     const read = new Map(
         modules.map(module => {
             const grade = matchGrade(systemIndex, module.grade)
-            const unsure =
-                grade === null ||
-                module.gradeConfidence < SURE ||
-                (module.credits !== null && module.creditsConfidence < SURE)
-            return [module.code, { grade, credits: module.credits, unsure }]
+            // Unsure credits are usually guessed, not read, so the school's default is safer.
+            const credits = module.creditsConfidence >= SURE ? module.credits : null
+            return [module.code, { grade, credits, unsure: grade === null || module.gradeConfidence < SURE }]
         }),
     )
 
