@@ -11,9 +11,7 @@ const applyPage = (html: string, page: Page) => {
         [/(<link rel="canonical" href=")[^"]*/, `$1${pageUrl(page)}`],
         [/(<meta property="og:url" content=")[^"]*/, `$1${pageUrl(page)}`],
         [/(<meta property="og:title" content=")[^"]*/, `$1${page.title}`],
-        [/(<meta property="og:description" content=")[^"]*/, `$1${page.description}`],
         [/(<meta name="twitter:title" content=")[^"]*/, `$1${page.title}`],
-        [/(<meta name="twitter:description" content=")[^"]*/, `$1${page.description}`],
     ]
     return replacements.reduce((result, [pattern, value]) => {
         if (!pattern.test(result)) throw new Error(`index.html is missing ${pattern}`)
