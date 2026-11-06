@@ -40,7 +40,7 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: barc
             <section
                 ref={ref}
                 aria-label="Receipt"
-                className="receipt scroll-mt-16 bg-paper px-5 pt-3 pb-8 lg:scroll-mt-6 lg:pt-8 font-mono text-[13px] leading-5 text-paper-ink uppercase lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto">
+                className="receipt scroll-mt-16 bg-paper px-5 pt-3 pb-8 lg:scroll-mt-6 lg:pt-8 font-mono text-[13px] leading-5 text-paper-ink uppercase lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
                 <div className="text-center">
                     <p className="text-lg leading-7">GPA buy what?</p>
                     <p>{system.name}</p>

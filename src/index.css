@@ -177,6 +177,15 @@ html [data-sonner-toaster] {
         -webkit-text-size-adjust: 100%;
         /* Keeps focused fields clear of the phone's results bar. */
         scroll-padding-bottom: 88px;
+        /* Room for the scrollbar is kept even before the page scrolls, so the
+           layout doesn't jump sideways when it appears. */
+        scrollbar-gutter: stable;
+    }
+    /* Dialogs lock scrolling and add a margin the width of the scrollbar to make up
+       for hiding it. The gutter above already keeps that room, so the margin would
+       shift the page instead. */
+    html body[data-scroll-locked] {
+        margin-right: 0 !important;
     }
     body {
         @apply bg-background text-foreground;
