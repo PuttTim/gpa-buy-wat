@@ -120,10 +120,10 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt }: ReceiptProp
                     <p className="mt-1 text-paper-faint">{barcodeValue}</p>
                     <a
                         className="mt-3 block normal-case hover:underline"
-                        href="https://gpa-buy-wat.vercel.app"
+                        href="https://gpabuywhat.com"
                         target="_blank"
                         rel="noreferrer">
-                        gpa-buy-wat.vercel.app
+                        gpabuywhat.com
                     </a>
                 </div>
             </section>
