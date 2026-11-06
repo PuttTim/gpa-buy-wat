@@ -1,7 +1,7 @@
 import { CalculationData } from "../interfaces/CalculationData"
 import { Module } from "../interfaces/Module"
 import { Semester } from "../interfaces/Semester"
-import { SYSTEMS } from "./systems"
+import { SYSTEMS, systemIndexFromPath } from "./systems"
 
 const STORAGE_KEY = "gpa-buy-wat:v1"
 
@@ -79,13 +79,14 @@ export const loadState = (): SavedState => {
         // Unreadable or blocked storage: start fresh.
     }
     const systemIndex = raw?.systemIndex
+    const savedIndex =
+        Number.isInteger(systemIndex) &&
+        systemIndex >= 0 &&
+        systemIndex < SYSTEMS.length
+            ? systemIndex
+            : 0
     return {
-        systemIndex:
-            Number.isInteger(systemIndex) &&
-            systemIndex >= 0 &&
-            systemIndex < SYSTEMS.length
-                ? systemIndex
-                : 0,
+        systemIndex: systemIndexFromPath(location.pathname) ?? savedIndex,
         systems: Array.from({ length: SYSTEMS.length }, (_, index) =>
             sanitizeData(raw?.systems?.[index], index),
         ),

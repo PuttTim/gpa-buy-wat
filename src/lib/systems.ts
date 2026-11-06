@@ -39,3 +39,16 @@ export const SYSTEMS: GradingSystem[] = [
 
 /** Universities together, then Poly. */
 export const TAB_ORDER = [0, 1, 3, 2]
+
+const POLY_INDEX = 2
+const POLY_PATHS = ["sp", "np", "tp", "nyp", "rp"]
+
+/** The system a path like "/nus" or "/sp" preselects, if any. */
+export const systemIndexFromPath = (pathname: string): number | null => {
+    const path = pathname.replace(/^\/+|\/+$/g, "").toLowerCase()
+    if (POLY_PATHS.includes(path)) return POLY_INDEX
+    const index = SYSTEMS.findIndex(system => system.name.toLowerCase() === path)
+    return index === -1 ? null : index
+}
+
+export const systemPath = (index: number) => `/${SYSTEMS[index].name.toLowerCase()}`

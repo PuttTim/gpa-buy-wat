@@ -29,7 +29,7 @@ import {
     MAX_CREDITS,
     saveState,
 } from "../lib/storage"
-import { SYSTEMS } from "../lib/systems"
+import { SYSTEMS, systemPath } from "../lib/systems"
 import { calculateGPA, creditsIn } from "../lib/calculation"
 
 type Update = (data: CalculationData) => CalculationData
@@ -235,6 +235,7 @@ const Calculator = () => {
                         setIndex={index => {
                             setFocusModule(null)
                             setRenaming(null)
+                            history.replaceState(null, "", systemPath(index))
                             setState(current => ({
                                 ...current,
                                 systemIndex: index,
