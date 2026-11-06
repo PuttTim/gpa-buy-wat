@@ -1,4 +1,5 @@
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import { ChevronDownIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { trackSystemSelected } from "@/lib/analytics"
 import { SYSTEMS, TAB_ORDER } from "@/lib/systems"
@@ -6,7 +7,7 @@ import { SYSTEMS, TAB_ORDER } from "@/lib/systems"
 interface SelectSystemProps {
     index: number
     setIndex: (index: number) => void
-    /** A dropdown instead of tabs, for narrow screens. */
+    /** A dropdown instead of tabs, for the narrow phone header. */
     dropdown?: boolean
     className?: string
 }
@@ -18,17 +19,23 @@ export const SelectSystem = ({ index, setIndex, dropdown, className }: SelectSys
     }
     if (!dropdown) return <SystemTabs index={index} select={select} className={className} />
     return (
-        <NativeSelect
-            aria-label="Grading system"
-            className={className}
-            value={String(index)}
-            onChange={event => select(event.target.value)}>
-            {TAB_ORDER.map(i => (
-                <NativeSelectOption key={i} value={String(i)}>
-                    {SYSTEMS[i].name}
-                </NativeSelectOption>
-            ))}
-        </NativeSelect>
+        <div className={cn("relative", className)}>
+            <select
+                aria-label="Grading system"
+                value={String(index)}
+                onChange={event => select(event.target.value)}
+                className="h-9 appearance-none rounded-lg bg-primary-foreground/15 pr-9 pl-3 font-mono text-[13px] text-primary-foreground uppercase outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60">
+                {TAB_ORDER.map(i => (
+                    <option key={i} value={String(i)} className="bg-[Canvas] text-[CanvasText]">
+                        {SYSTEMS[i].name}
+                    </option>
+                ))}
+            </select>
+            <ChevronDownIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2"
+            />
+        </div>
     )
 }
 

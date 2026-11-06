@@ -260,13 +260,7 @@ const Calculator = () => {
                         <h1 className="font-mono text-base whitespace-nowrap uppercase sm:text-xl">GPA buy what?</h1>
                     </div>
                     <SelectSystem index={systemIndex} setIndex={selectSystem} className="hidden sm:flex" />
-                    <Button
-                        variant="ghost"
-                        className="h-9 bg-primary-foreground/15 hover:bg-primary-foreground/25 hover:text-primary-foreground sm:hidden dark:hover:bg-primary-foreground/25"
-                        onClick={openImport}>
-                        <ScanBarcode />
-                        Import
-                    </Button>
+                    <SelectSystem dropdown index={systemIndex} setIndex={selectSystem} className="sm:hidden" />
                     <ThemeToggle />
                 </div>
             </header>
@@ -281,13 +275,11 @@ const Calculator = () => {
                                 Your GPA and credits from past semesters
                             </p>
                         </div>
-                        {/* On phones the header only has room for Import, so the school picker lives here. */}
-                        <SelectSystem
-                            dropdown
-                            index={systemIndex}
-                            setIndex={selectSystem}
-                            className="shrink-0 sm:hidden"
-                        />
+                        {/* On phones the header only has room for the school picker, so Import lives here. */}
+                        <Button className="shrink-0 sm:hidden" onClick={openImport}>
+                            <ScanBarcode />
+                            Import
+                        </Button>
                     </div>
                     <Card>
                         <CardContent className="grid grid-cols-2 gap-4">
@@ -470,7 +462,7 @@ const Calculator = () => {
                         <Button variant="outline" className="flex-1" onClick={addSemester}>
                             Add semester
                         </Button>
-                        {/* On phones, Import sits in the header instead. */}
+                        {/* On phones, Import sits beside "So far" instead. */}
                         <Button variant="outline" className="hidden sm:inline-flex" onClick={openImport}>
                             <ScanBarcode />
                             Import
