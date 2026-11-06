@@ -63,7 +63,7 @@ export const PasteImport = ({ systemIndex, onImport }: PasteImportProps) => {
                 rows={6}
                 value={text}
                 onChange={event => setText(event.target.value)}
-                placeholder={"CS2030 A\nCS2040 A-\nCS2100: B+"}
+                placeholder={system.pastePlaceholder}
                 className="w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 font-mono text-base outline-none placeholder:text-muted-foreground focus:border-foreground/40 sm:text-sm dark:bg-input/30"
             />
             <p role="status" className="text-destructive empty:hidden">
