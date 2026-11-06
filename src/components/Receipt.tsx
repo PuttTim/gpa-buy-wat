@@ -12,7 +12,7 @@ interface ReceiptProps {
     credits: number
     gpa: number | null
     prompt: string
-    /** Scanned by another device to import these grades. */
+    /** Scanned by another device to copy these grades. */
     barcode: string
 }
 
@@ -36,7 +36,7 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: barc
     const barcode = encodeCode39(barcodeValue)
 
     return (
-        <div className="receipt-shadow relative z-20 min-w-0 lg:sticky lg:top-6 lg:mt-14">
+        <div className="receipt-shadow relative z-20 min-w-0 lg:sticky lg:top-6 lg:mt-4">
             <section
                 ref={ref}
                 aria-label="Receipt"

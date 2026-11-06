@@ -19,7 +19,7 @@ const MAX_RETRY_MS = 30 * 1000
 const REPLACED = 4000
 
 /** One per tab, so it survives reloads but two tabs never share a barcode. */
-const importId = () => {
+const transferId = () => {
     try {
         const saved = sessionStorage.getItem(ID_KEY)
         if (saved && new RegExp(`^[${ID_ALPHABET}]{${ID_LENGTH}}$`).test(saved)) return saved
@@ -34,19 +34,19 @@ const importId = () => {
     return id
 }
 
-export const importBarcode = (systemIndex: number, id: string) =>
+export const transferBarcode = (systemIndex: number, id: string) =>
     `${SYSTEMS[systemIndex].name}-${id}`.toUpperCase()
 
 /** Reads "NUS-K7Q9XM2A" style barcodes. The older GPA-only barcode returns null. */
-export const parseImportBarcode = (value: string) =>
+export const parseTransferBarcode = (value: string) =>
     value.trim().toUpperCase().match(/^[A-Z]+-([2-9A-HJ-NP-Z]{8})$/)?.[1] ?? null
 
 /**
  * Keeps this tab reachable for scanning while it's visible. Returns this tab's
  * barcode ID straight away, so the receipt never swaps barcodes while connecting.
  */
-export const useImportHost = (getTranscript: () => Transcript, onSent: () => void) => {
-    const [id] = useState(importId)
+export const useTransferHost = (getTranscript: () => Transcript, onSent: () => void) => {
+    const [id] = useState(transferId)
     const latest = useRef({ getTranscript, onSent })
     latest.current = { getTranscript, onSent }
 

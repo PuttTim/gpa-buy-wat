@@ -1,4 +1,4 @@
-// Lets another device import a transcript by scanning the receipt's barcode.
+// Lets another device copy a transcript by scanning the receipt's barcode.
 //
 // The device showing the barcode keeps a WebSocket open to a GPABuyWhatImports
 // Durable Object named after its barcode ID. When a phone scans it, the phone
@@ -34,7 +34,7 @@ const error = (status: number, message: string) => json({ error: message }, stat
 const isString = (value: unknown, max: number) => typeof value === "string" && value.length <= max
 const isNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 999
 
-/** Only the shape is checked here. The importing device sanitizes values itself. */
+/** Only the shape is checked here. The receiving device sanitizes values itself. */
 const isTranscript = (body: any) =>
     Number.isInteger(body?.systemIndex) &&
     body.systemIndex >= 0 &&

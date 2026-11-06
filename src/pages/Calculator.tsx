@@ -1,4 +1,4 @@
-import { CircleHelp, Pencil, ScanBarcode, Trash2 } from "lucide-react"
+import { CircleHelp, ClipboardPaste, Pencil, ScanBarcode, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
@@ -18,6 +18,7 @@ import { ImportDialog } from "../components/ImportDialog"
 import { MODULE_COLUMNS, ModuleRow } from "../components/ModuleRow"
 import { NumberField } from "../components/NumberField"
 import { Receipt } from "../components/Receipt"
+import { ScanDialog } from "../components/ScanDialog"
 import { SelectSystem } from "../components/SelectSystem"
 import { ThemeToggle } from "../components/ThemeToggle"
 import { CalculationData } from "../interfaces/CalculationData"
@@ -33,7 +34,7 @@ import {
 import { pageTitleFor } from "../lib/pages"
 import { SYSTEMS, systemPath } from "../lib/systems"
 import { calculateGPA, creditsIn } from "../lib/calculation"
-import { Beep, importBarcode, primeBeep, useImportHost } from "../lib/transfer"
+import { Beep, primeBeep, Transcript, transferBarcode, useTransferHost } from "../lib/transfer"
 
 type Update = (data: CalculationData) => CalculationData
 
@@ -44,6 +45,9 @@ const insertAt = <T,>(items: T[], index: number, item: T) => [
     item,
     ...items.slice(index),
 ]
+
+const HEADER_BUTTON =
+    "bg-white/70 text-primary-foreground hover:bg-white/85 hover:text-primary-foreground dark:hover:bg-white/85"
 
 const Calculator = () => {
     const [state, setState] = useState(loadState)
@@ -69,12 +73,13 @@ const Calculator = () => {
     useEffect(() => setSaved(saveState(state)), [state])
 
     // While this tab is open, the receipt's barcode lets another device scan and
-    // import exactly what's on screen.
-    const importId = useImportHost(
+    // copy exactly what's on screen.
+    const transferId = useTransferHost(
         () => ({ systemIndex, data: calculationData }),
         () => toast("Sent your grades to another device"),
     )
 
+    const [scanning, setScanning] = useState(false)
     const [importing, setImporting] = useState(false)
     const [beep, setBeep] = useState<Beep | null>(null)
     const selectSystem = (index: number) => {
@@ -88,10 +93,27 @@ const Calculator = () => {
         }))
     }
 
-    const openImport = () => {
+    const openScanner = () => {
         // Primed on the tap itself, or the scan beep stays silent on iOS.
         setBeep(primeBeep())
-        setImporting(true)
+        setScanning(true)
+    }
+
+    /** Replaces one system's tab with incoming grades and switches to it. */
+    const loadTranscript = (transcript: Transcript, message: string) => {
+        setFocusModule(null)
+        setRenaming(null)
+        toast.dismiss()
+        startOverToast.current = null
+        history.replaceState(null, "", systemPath(transcript.systemIndex))
+        document.title = pageTitleFor(systemPath(transcript.systemIndex))
+        setState(current => ({
+            systemIndex: transcript.systemIndex,
+            systems: current.systems.map((data, i) =>
+                i === transcript.systemIndex ? transcript.data : data,
+            ),
+        }))
+        toast(message)
     }
 
     const replaceSystem = (index: number, update: Update) => {
@@ -261,6 +283,30 @@ const Calculator = () => {
                     </div>
                     <SelectSystem index={systemIndex} setIndex={selectSystem} className="hidden sm:flex" />
                     <SelectSystem dropdown index={systemIndex} setIndex={selectSystem} className="sm:hidden" />
+                    <div className="col-span-full row-start-2 grid grid-cols-2 gap-2 lg:hidden">
+                        <Button variant="ghost" className={HEADER_BUTTON} onClick={openScanner}>
+                            <ScanBarcode />
+                            Scan
+                        </Button>
+                        <Button variant="ghost" className={HEADER_BUTTON} onClick={() => setImporting(true)}>
+                            <ClipboardPaste />
+                            Import
+                        </Button>
+                    </div>
+                    <ScanDialog
+                        open={scanning}
+                        onOpenChange={setScanning}
+                        beep={beep}
+                        onCopy={transcript =>
+                            loadTranscript(transcript, `Copied into ${SYSTEMS[transcript.systemIndex].name}`)
+                        }
+                    />
+                    <ImportDialog
+                        open={importing}
+                        onOpenChange={setImporting}
+                        systemIndex={systemIndex}
+                        onImport={data => loadTranscript({ systemIndex, data }, `Imported into ${system.name}`)}
+                    />
                     <ThemeToggle />
                 </div>
             </header>
@@ -268,18 +314,11 @@ const Calculator = () => {
             <div className="m-auto max-w-[1100px] px-4 pt-4 lg:px-6 lg:pt-6">
             <main className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
                 <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
-                    <div className="-mb-2 flex items-end justify-between gap-3 lg:-mb-3">
-                        <div>
-                            <h2 className="font-mono text-base uppercase">So far</h2>
-                            <p className="text-sm text-muted-foreground">
-                                Your GPA and credits from past semesters
-                            </p>
-                        </div>
-                        {/* On phones the header only has room for the school picker, so Import lives here. */}
-                        <Button className="shrink-0 sm:hidden" onClick={openImport}>
-                            <ScanBarcode />
-                            Import
-                        </Button>
+                    <div className="-mb-2 lg:-mb-3">
+                        <h2 className="font-mono text-base uppercase">So far</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Your GPA and credits from past semesters
+                        </p>
                     </div>
                     <Card>
                         <CardContent className="grid grid-cols-2 gap-4">
@@ -462,32 +501,6 @@ const Calculator = () => {
                         <Button variant="outline" className="flex-1" onClick={addSemester}>
                             Add semester
                         </Button>
-                        {/* On phones, Import sits beside "So far" instead. */}
-                        <Button variant="outline" className="hidden sm:inline-flex" onClick={openImport}>
-                            <ScanBarcode />
-                            Import
-                        </Button>
-                        <ImportDialog
-                            open={importing}
-                            onOpenChange={setImporting}
-                            beep={beep}
-                            systemIndex={systemIndex}
-                            onImport={transcript => {
-                                setFocusModule(null)
-                                setRenaming(null)
-                                toast.dismiss()
-                                startOverToast.current = null
-                                history.replaceState(null, "", systemPath(transcript.systemIndex))
-                                document.title = pageTitleFor(systemPath(transcript.systemIndex))
-                                setState(current => ({
-                                    systemIndex: transcript.systemIndex,
-                                    systems: current.systems.map((data, i) =>
-                                        i === transcript.systemIndex ? transcript.data : data,
-                                    ),
-                                }))
-                                toast(`Imported into ${SYSTEMS[transcript.systemIndex].name}`)
-                            }}
-                        />
                         <Popover open={confirmingClear} onOpenChange={setConfirmingClear}>
                             <PopoverTrigger asChild>
                                 <Button
@@ -544,15 +557,29 @@ const Calculator = () => {
                     </div>
                 </button>
 
-                <Receipt
-                    ref={resultRef}
-                    system={system}
-                    data={calculationData}
-                    credits={calculationData.totalCredits + creditsIn(allModules)}
-                    gpa={resultGPA}
-                    barcode={importBarcode(systemIndex, importId)}
-                    prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}
-                />
+                {/* Only a wrapper on desktop: on phones the receipt must stay next to its stub.
+                    It fills the row so the receipt can still stick while the buttons scroll away. */}
+                <div className="contents lg:block lg:self-stretch">
+                    <div className="hidden grid-cols-2 gap-3 lg:grid">
+                        <Button variant="outline" onClick={openScanner}>
+                            <ScanBarcode />
+                            Scan
+                        </Button>
+                        <Button variant="outline" onClick={() => setImporting(true)}>
+                            <ClipboardPaste />
+                            Import
+                        </Button>
+                    </div>
+                    <Receipt
+                        ref={resultRef}
+                        system={system}
+                        data={calculationData}
+                        credits={calculationData.totalCredits + creditsIn(allModules)}
+                        gpa={resultGPA}
+                        barcode={transferBarcode(systemIndex, transferId)}
+                        prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}
+                    />
+                </div>
             </main>
 
             </div>
