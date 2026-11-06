@@ -170,3 +170,81 @@ export const parseWithAI = async (
         ? []
         : [{ name: "Semester 1", modules: modules.map(module => ({ code: module.code, ...read.get(module.code)! })) }]
 }
+
+// Reading an image mixes up look-alike characters. A code is letters, then 3 or 4
+// digits, then up to two letters, so each part can be put back to the kind it must be.
+const TO_LETTER: Record<string, string> = { "0": "O", "1": "I", "2": "Z", "5": "S", "6": "G", "8": "B", "€": "C", "$": "S" }
+const SUFFIX_LETTER: Record<string, string> = { ...TO_LETTER, "8": "S" }
+const TO_DIGIT: Record<string, string> = { O: "0", Q: "0", D: "0", I: "1", L: "1", "|": "1", Z: "2", S: "5", G: "6", B: "8" }
+const STRICT_CODE = /^([A-Z]{2,4}-)?[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
+
+/** "1S1108" -> "IS1108", "CS12318" -> "CS1231S". Null when it can't be a code. */
+const repairCode = (code: string) => {
+    const upper = code.toUpperCase().replace(/\s+/g, "")
+    if (STRICT_CODE.test(upper)) return upper
+    for (const prefix of [2, 3, 4])
+        for (const digits of [4, 3])
+            for (const suffix of [0, 1, 2]) {
+                if (prefix + digits + suffix !== upper.length) continue
+                const chars = [...upper]
+                const fixed =
+                    chars.slice(0, prefix).map(c => TO_LETTER[c] ?? c).join("") +
+                    chars.slice(prefix, prefix + digits).map(c => TO_DIGIT[c] ?? c).join("") +
+                    chars.slice(prefix + digits).map(c => SUFFIX_LETTER[c] ?? c).join("")
+                if (STRICT_CODE.test(fixed)) return fixed
+            }
+    return null
+}
+
+interface ImageModule extends AIModule {
+    codeConfidence: number
+}
+
+/** Reads screenshots with Clairic. Every row it was unsure of, or had to repair, is flagged. */
+export const parseImagesWithAI = async (systemIndex: number, images: string[]): Promise<ParsedSemester[]> => {
+    const response = await fetch("/api/parse", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ images }),
+    })
+    if (response.status === 429) throw new Error("Too many tries. Wait a minute and try again.")
+    if (!response.ok) throw new Error("Couldn't read that image. Try a sharper screenshot, or paste the text.")
+    const { modules } = (await response.json()) as { modules: ImageModule[] }
+
+    const read = modules.flatMap(module => {
+        const code = repairCode(module.code)
+        if (!code && !module.grade) return []
+        const grade = matchGrade(systemIndex, module.grade)
+        return [{
+            code: code ?? module.code,
+            grade,
+            credits: module.creditsConfidence >= SURE ? module.credits : null,
+            unsure:
+                !code ||
+                code !== module.code ||
+                grade === null ||
+                module.codeConfidence < SURE ||
+                module.gradeConfidence < SURE,
+        }]
+    })
+    return read.length === 0 ? [] : [{ name: "Semester 1", modules: read }]
+}
+
+/** Clairic reads at most about a megapixel per image, so larger ones are shrunk first. */
+const MAX_PIXELS = 1_000_000
+
+export const imageToDataUrl = async (file: File) => {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, Math.sqrt(MAX_PIXELS / (bitmap.width * bitmap.height)))
+    const canvas = document.createElement("canvas")
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    const context = canvas.getContext("2d")!
+    context.fillStyle = "#fff"
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+    // PNG keeps text edges sharp; fall back to JPEG if it's too big to send.
+    const png = canvas.toDataURL("image/png")
+    return png.length < 4_000_000 ? png : canvas.toDataURL("image/jpeg", 0.92)
+}

@@ -114,17 +114,54 @@ export class GPABuyWhatImports {
     }
 }
 
-// Reading pasted grades with Clairic, for what the browser's own parser
-// (src/lib/parseGrades.ts) couldn't finish. Text only: screenshots read too
-// poorly to trust (misread codes, invented rows).
-const MAX_PARSE_BYTES = 32 * 1024
+// Reading pasted grades or screenshots with Clairic, for what the browser's own
+// parser (src/lib/parseGrades.ts) couldn't finish. Image results are often
+// misread, so the browser repairs codes and asks the user to check them.
+const MAX_PARSE_BYTES = 12 * 1024 * 1024
 const MAX_TEXT = 10_000
+const MAX_IMAGES = 4
+const IMAGE = /^data:image\/(png|jpeg|webp);base64,/
 const MAX_MODULES = 60
 const MODULE_CODE = /^([A-Z]{2,4}-)?[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
 const CLAIRIC = "@cf/cloudflare/clairic"
 
-const readFields = (env: Env, text: string, fields: Record<string, unknown>) =>
-    env.AI.run(CLAIRIC, { model: "clairic", state: text, fields })
+const readFields = (env: Env, text: string, fields: Record<string, unknown>, images: string[] = []) =>
+    env.AI.run(CLAIRIC, { model: "clairic", state: text, ...(images.length ? { images } : {}), fields })
+
+const confidence = (answer: any) => Number(answer?.confidence ?? 0)
+
+/**
+ * Screenshots: counting the rows first, then asking for each row by position, read
+ * far better in testing than asking for lists of codes and grades.
+ */
+const readImages = async (env: Env, images: string[]) => {
+    const rowsAcross = "counting module rows from the top across every table and image, not counting header rows"
+    const counted = await readFields(env, "", {
+        rows: { type: "number", integer: true, instructions: `How many module rows there are in total, ${rowsAcross}` },
+    }, images)
+    const rows = Math.min(Math.max(Math.round(Number(counted?.answers?.rows?.value ?? 0)), 0), MAX_MODULES)
+    if (rows === 0) return []
+
+    const fields: Record<string, unknown> = {}
+    for (let i = 1; i <= rows; i++) {
+        fields[`code_${i}`] = { type: "text", instructions: `Module or course code of module row ${i}, ${rowsAcross}` }
+        fields[`grade_${i}`] = { type: "text", instructions: `Grade of module row ${i}, exactly as written` }
+        fields[`credits_${i}`] = { type: "number", instructions: `Credits, units or MCs of module row ${i}` }
+    }
+    const answers = (await readFields(env, "", fields, images))?.answers ?? {}
+    return Array.from({ length: rows }, (_, index) => {
+        const i = index + 1
+        const code = answers[`code_${i}`], grade = answers[`grade_${i}`], credits = answers[`credits_${i}`]
+        return {
+            code: typeof code?.value === "string" ? code.value.toUpperCase().replace(/\s+/g, "") : "",
+            codeConfidence: confidence(code),
+            grade: typeof grade?.value === "string" ? grade.value : null,
+            gradeConfidence: confidence(grade),
+            credits: typeof credits?.value === "number" ? credits.value : null,
+            creditsConfidence: confidence(credits),
+        }
+    })
+}
 
 const parse = async (request: Request, env: Env) => {
     if (request.method !== "POST") return error(405, "Method not allowed")
@@ -142,6 +179,17 @@ const parse = async (request: Request, env: Env) => {
         return error(400, "Invalid JSON")
     }
     const text = typeof input?.text === "string" ? input.text.slice(0, MAX_TEXT) : ""
+    const images: string[] = Array.isArray(input?.images)
+        ? input.images.filter((image: unknown) => typeof image === "string" && IMAGE.test(image)).slice(0, MAX_IMAGES)
+        : []
+    if (images.length > 0) {
+        try {
+            return json({ modules: await readImages(env, images) })
+        } catch {
+            return error(502, "Couldn't read that")
+        }
+    }
+    if (text.length > 64 * 1024) return error(413, "Too large")
     if (!text.trim()) return error(400, "Nothing to read")
     const known: string[] = Array.isArray(input?.codes)
         ? input.codes.filter((code: unknown) => typeof code === "string" && MODULE_CODE.test(code))
