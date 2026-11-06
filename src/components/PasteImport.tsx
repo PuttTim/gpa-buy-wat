@@ -1,5 +1,5 @@
 import { ImagePlus, Trash2, X } from "lucide-react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -28,12 +28,25 @@ export const PasteImport = ({ systemIndex, onImport }: PasteImportProps) => {
     const [images, setImages] = useState<string[]>([])
     const fileInput = useRef<HTMLInputElement>(null)
 
-    const addImages = async (files: FileList | null) => {
+    const addImages = async (files: FileList | File[] | null) => {
         if (!files) return
         const picked = [...files].filter(file => file.type.startsWith("image/")).slice(0, MAX_IMAGES - images.length)
         const added = await Promise.all(picked.map(imageToDataUrl))
         setImages(current => [...current, ...added].slice(0, MAX_IMAGES))
     }
+
+    // A screenshot on the clipboard can be pasted straight in, wherever focus is in the dialog.
+    useEffect(() => {
+        if (semesters) return
+        const onPaste = (event: ClipboardEvent) => {
+            const pasted = [...(event.clipboardData?.files ?? [])].filter(file => file.type.startsWith("image/"))
+            if (pasted.length === 0) return
+            event.preventDefault()
+            addImages(pasted)
+        }
+        document.addEventListener("paste", onPaste)
+        return () => document.removeEventListener("paste", onPaste)
+    })
 
     const read = async () => {
         setProblem("")
@@ -69,14 +82,14 @@ export const PasteImport = ({ systemIndex, onImport }: PasteImportProps) => {
     return (
         <>
             <DialogDescription>
-                Paste your grades, one module per line, or add screenshots of your results.
+                Paste your grades, one module per line, or paste or add screenshots of your results.
             </DialogDescription>
             <textarea
                 aria-label="Grades to import"
                 rows={6}
                 value={text}
                 onChange={event => setText(event.target.value)}
-                placeholder={"CS2030 A\nCS2040 A-\nCS2100: B+"}
+                placeholder={"CS2030 A\nCS2040 A-\nCS2100: B+\n\nOr paste a screenshot"}
                 className="w-full resize-y rounded-lg border border-input bg-transparent px-3 py-2 font-mono text-base outline-none placeholder:text-muted-foreground focus:border-foreground/40 sm:text-sm dark:bg-input/30"
             />
             {images.length > 0 && (
