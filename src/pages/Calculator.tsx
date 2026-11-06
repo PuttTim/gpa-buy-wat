@@ -1,4 +1,4 @@
-import { CircleHelp, Pencil, Trash2 } from "lucide-react"
+import { CircleHelp, Pencil, ScanBarcode, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import {
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { foodFor } from "@/lib/food"
 import { cn } from "@/lib/utils"
+import { ImportDialog } from "../components/ImportDialog"
 import { MODULE_COLUMNS, ModuleRow } from "../components/ModuleRow"
 import { NumberField } from "../components/NumberField"
 import { Receipt } from "../components/Receipt"
@@ -32,6 +33,7 @@ import {
 import { pageTitleFor } from "../lib/pages"
 import { SYSTEMS, systemPath } from "../lib/systems"
 import { calculateGPA, creditsIn } from "../lib/calculation"
+import { Beep, importBarcode, primeBeep, useImportHost } from "../lib/transfer"
 
 type Update = (data: CalculationData) => CalculationData
 
@@ -65,6 +67,16 @@ const Calculator = () => {
     const [confirmingClear, setConfirmingClear] = useState(false)
     const [saved, setSaved] = useState(true)
     useEffect(() => setSaved(saveState(state)), [state])
+
+    // While this tab is open, the receipt's barcode lets another device scan and
+    // import exactly what's on screen.
+    const importId = useImportHost(
+        () => ({ systemIndex, data: calculationData }),
+        () => toast("Sent your grades to another device"),
+    )
+
+    const [importing, setImporting] = useState(false)
+    const [beep, setBeep] = useState<Beep | null>(null)
 
     const replaceSystem = (index: number, update: Update) => {
         setState(current => ({
@@ -438,6 +450,36 @@ const Calculator = () => {
                         <Button variant="outline" className="flex-1" onClick={addSemester}>
                             Add semester
                         </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                // Primed on the tap itself, or the scan beep stays silent on iOS.
+                                setBeep(primeBeep())
+                                setImporting(true)
+                            }}>
+                            <ScanBarcode />
+                            Import
+                        </Button>
+                        <ImportDialog
+                            open={importing}
+                            onOpenChange={setImporting}
+                            beep={beep}
+                            onImport={transcript => {
+                                setFocusModule(null)
+                                setRenaming(null)
+                                toast.dismiss()
+                                startOverToast.current = null
+                                history.replaceState(null, "", systemPath(transcript.systemIndex))
+                                document.title = pageTitleFor(systemPath(transcript.systemIndex))
+                                setState(current => ({
+                                    systemIndex: transcript.systemIndex,
+                                    systems: current.systems.map((data, i) =>
+                                        i === transcript.systemIndex ? transcript.data : data,
+                                    ),
+                                }))
+                                toast(`Imported into ${SYSTEMS[transcript.systemIndex].name}`)
+                            }}
+                        />
                         <Popover open={confirmingClear} onOpenChange={setConfirmingClear}>
                             <PopoverTrigger asChild>
                                 <Button
@@ -500,6 +542,7 @@ const Calculator = () => {
                     data={calculationData}
                     credits={calculationData.totalCredits + creditsIn(allModules)}
                     gpa={resultGPA}
+                    barcode={importId && importBarcode(systemIndex, importId)}
                     prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}
                 />
             </main>

@@ -12,6 +12,8 @@ interface ReceiptProps {
     credits: number
     gpa: number | null
     prompt: string
+    /** Overrides the GPA barcode once these grades can be imported elsewhere. */
+    barcode?: string | null
 }
 
 const LINE = "grid grid-cols-[minmax(0,1fr)_7ch_3ch] gap-x-2"
@@ -28,11 +30,12 @@ const printedAt = () => {
     }
 }
 
-export const Receipt = ({ ref, system, data, credits, gpa, prompt }: ReceiptProps) => {
+export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: transfer }: ReceiptProps) => {
     const [printed] = useState(printedAt)
     const food = gpa === null ? null : foodFor(gpa)
-    // What you'd scan: the system, GPA and credits. It changes with every grade.
-    const barcodeValue = [system.name, ...(gpa === null ? [] : [gpa.toFixed(2), credits])].join("-")
+    // While this tab can't be reached for import, the barcode shows the system, GPA and credits.
+    const barcodeValue =
+        transfer ?? [system.name, ...(gpa === null ? [] : [gpa.toFixed(2), credits])].join("-")
     const barcode = encodeCode39(barcodeValue)
 
     return (
