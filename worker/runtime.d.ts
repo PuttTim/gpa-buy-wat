@@ -2,6 +2,10 @@
 // pulling in the full runtime types.
 
 interface DurableObjectState {
+    storage: {
+        get<T>(key: string): Promise<T | undefined>
+        put(key: string, value: unknown): Promise<void>
+    }
     acceptWebSocket(socket: WebSocket, tags?: string[]): void
     getWebSockets(tag?: string): WebSocket[]
     setWebSocketAutoResponse(pair: WebSocketRequestResponsePair): void

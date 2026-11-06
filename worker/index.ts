@@ -8,6 +8,9 @@
 // Sockets use the hibernation API, so an idle device costs no duration, and
 // keepalive pings are answered by the runtime without waking the object.
 // Static assets are served by Cloudflare; only /api/* reaches this Worker.
+//
+// One more object of the same class, named PARSE_BUDGET, counts Clairic reads
+// across everyone, so the AI bill has a hard daily ceiling.
 
 interface Env {
     IMPORTS: DurableObjectNamespace
@@ -22,6 +25,10 @@ const PULL_TIMEOUT_MS = 10_000
 const HOST = "host"
 // No 0/O or 1/I. All valid Code 39. Matches src/lib/transfer.ts.
 const ID_PATTERN = /^[2-9A-HJ-NP-Z]{8}$/
+// Can't clash with a barcode ID: those are 8 characters with no lowercase.
+const PARSE_BUDGET = "parse-budget"
+/** Clairic reads allowed per UTC day, across every user. */
+const PARSE_DAILY_LIMIT = 2000
 
 const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -64,8 +71,20 @@ export class GPABuyWhatImports {
     }
 
     async fetch(request: Request) {
+        if (new URL(request.url).pathname === `/${PARSE_BUDGET}`) return this.spendParse()
         if (request.headers.get("upgrade") === "websocket") return this.connect()
         return this.pull()
+    }
+
+    /** Only on the PARSE_BUDGET object. Counts one read; 429 once today's budget is gone. */
+    private async spendParse() {
+        const today = new Date().toISOString().slice(0, 10)
+        const saved = await this.ctx.storage.get<{ day: string; count: number }>(PARSE_BUDGET)
+        const count = saved?.day === today ? saved.count : 0
+        if (count >= PARSE_DAILY_LIMIT) return error(429, "Daily limit reached")
+        // Requests to one object run one at a time, so this read-then-write can't race.
+        await this.ctx.storage.put(PARSE_BUDGET, { day: today, count: count + 1 })
+        return json({ ok: true })
     }
 
     private connect() {
@@ -123,6 +142,12 @@ const MAX_MODULES = 60
 const MODULE_CODE = /^([A-Z]{2,4}-)?[A-Z]{2,4}\d{3,4}[A-Z]{0,2}$/
 const CLAIRIC = "@cf/cloudflare/clairic"
 
+/** Clairic's confidence as 0 to 1. Anything unexpected counts as 0, so it gets checked. */
+const confidence = (answer: any) => {
+    const value = Number(answer?.confidence)
+    return Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : 0
+}
+
 const readFields = (env: Env, text: string, fields: Record<string, unknown>) =>
     env.AI.run(CLAIRIC, { model: "clairic", state: text, fields })
 
@@ -143,6 +168,10 @@ const parse = async (request: Request, env: Env) => {
     }
     const text = typeof input?.text === "string" ? input.text.slice(0, MAX_TEXT) : ""
     if (!text.trim()) return error(400, "Nothing to read")
+    // Last check before spending anything, so bad requests don't use up the budget.
+    const budget = env.IMPORTS.get(env.IMPORTS.idFromName(PARSE_BUDGET))
+    const spent = await budget.fetch(new Request(`https://budget/${PARSE_BUDGET}`, { method: "POST" }))
+    if (!spent.ok) return error(503, "Daily limit reached")
     const known: string[] = Array.isArray(input?.codes)
         ? input.codes.filter((code: unknown) => typeof code === "string" && MODULE_CODE.test(code))
         : []
@@ -177,9 +206,9 @@ const parse = async (request: Request, env: Env) => {
         const modules = codes.map((code, i) => ({
             code,
             grade: typeof answers[`grade_${i}`]?.value === "string" ? answers[`grade_${i}`].value : null,
-            gradeConfidence: Number(answers[`grade_${i}`]?.confidence ?? 0),
+            gradeConfidence: confidence(answers[`grade_${i}`]),
             credits: typeof answers[`credits_${i}`]?.value === "number" ? answers[`credits_${i}`].value : null,
-            creditsConfidence: Number(answers[`credits_${i}`]?.confidence ?? 0),
+            creditsConfidence: confidence(answers[`credits_${i}`]),
         }))
         return json({ modules })
     } catch {

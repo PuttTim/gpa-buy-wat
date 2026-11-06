@@ -58,6 +58,10 @@ export const matchGrade = (systemIndex: number, text: string | null | undefined)
     return aliases.get(cleaned) ?? aliases.get(compact(text.trim().split(/\s+/)[0])) ?? null
 }
 
+/** A module's credits, or null if it can't be one. */
+const validCredits = (value: number | null) =>
+    value !== null && Number.isFinite(value) && value > 0 && value <= 40 ? value : null
+
 export const normaliseCode = (code: string) => code.toUpperCase().replace(/\s+/g, "")
 
 export const parseLocally = (systemIndex: number, text: string): LocalParse => {
@@ -106,8 +110,7 @@ export const parseLocally = (systemIndex: number, text: string): LocalParse => {
             numbered.find(i => CREDIT_UNIT.test(rest[i - 1] ?? "")) ??
             numbered.find(i => CREDIT_UNIT.test(rest[i + 1] ?? "")) ??
             numbered.at(-1)
-        const value = at === undefined ? null : Number(rest[at])
-        const credits = value !== null && value > 0 && value <= 40 ? value : null
+        const credits = validCredits(at === undefined ? null : Number(rest[at]))
 
         if (grade === null) needsAI = true
         // "B+ (S/U)": the grade may not count, so let the user decide.
@@ -143,6 +146,8 @@ export const parseWithAI = async (
         body: JSON.stringify({ text, codes: known }),
     })
     if (response.status === 429) throw new Error("Too many tries. Wait a minute and try again.")
+    if (response.status === 503)
+        throw new Error("Reading is paused for today. Try one module per line, like \"CS2030 A\".")
     if (!response.ok) throw new Error("Couldn't read that. Try one module per line, like \"CS2030 A\".")
     const { modules } = (await response.json()) as { modules: AIModule[] }
 
@@ -150,8 +155,9 @@ export const parseWithAI = async (
         modules.map(module => {
             const grade = matchGrade(systemIndex, module.grade)
             // Unsure credits are usually guessed, not read, so the school's default is safer.
-            const credits = module.creditsConfidence >= SURE ? module.credits : null
-            return [module.code, { grade, credits, unsure: grade === null || module.gradeConfidence < SURE }]
+            const credits = module.creditsConfidence >= SURE ? validCredits(module.credits) : null
+            // Written as "not sure enough" so a missing or odd confidence is flagged, not trusted.
+            return [module.code, { grade, credits, unsure: grade === null || !(module.gradeConfidence >= SURE) }]
         }),
     )
 
