@@ -29,6 +29,7 @@ import {
     MAX_CREDITS,
     saveState,
 } from "../lib/storage"
+import { pageTitleFor } from "../lib/pages"
 import { SYSTEMS, systemPath } from "../lib/systems"
 import { calculateGPA, creditsIn } from "../lib/calculation"
 
@@ -236,6 +237,7 @@ const Calculator = () => {
                             setFocusModule(null)
                             setRenaming(null)
                             history.replaceState(null, "", systemPath(index))
+                            document.title = pageTitleFor(systemPath(index))
                             setState(current => ({
                                 ...current,
                                 systemIndex: index,
