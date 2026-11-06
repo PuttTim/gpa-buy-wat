@@ -147,7 +147,9 @@ export const parseWithAI = async (
     })
     if (response.status === 429) throw new Error("Too many tries. Wait a minute and try again.")
     if (response.status === 503)
-        throw new Error("Reading is paused for today. Try one module per line, like \"CS2030 A\".")
+        throw new Error(
+            "Smart reading has hit its limit for today. Lines like \"CS2030 A\" (code then grade) still work.",
+        )
     if (!response.ok) throw new Error("Couldn't read that. Try one module per line, like \"CS2030 A\".")
     const { modules } = (await response.json()) as { modules: AIModule[] }
 
