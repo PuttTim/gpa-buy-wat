@@ -42,12 +42,11 @@ export const parseImportBarcode = (value: string) =>
     value.trim().toUpperCase().match(/^[A-Z]+-([2-9A-HJ-NP-Z]{8})$/)?.[1] ?? null
 
 /**
- * Keeps this tab reachable for scanning while it's visible. Returns the barcode ID
- * once connected, or null while it isn't (the receipt then shows its plain barcode).
+ * Keeps this tab reachable for scanning while it's visible. Returns this tab's
+ * barcode ID straight away, so the receipt never swaps barcodes while connecting.
  */
 export const useImportHost = (getTranscript: () => Transcript, onSent: () => void) => {
     const [id] = useState(importId)
-    const [connected, setConnected] = useState(false)
     const latest = useRef({ getTranscript, onSent })
     latest.current = { getTranscript, onSent }
 
@@ -65,7 +64,6 @@ export const useImportHost = (getTranscript: () => Transcript, onSent: () => voi
                 socket.close(1000)
                 socket = null
             }
-            setConnected(false)
         }
 
         const connect = () => {
@@ -76,7 +74,6 @@ export const useImportHost = (getTranscript: () => Transcript, onSent: () => voi
             socket = current
             current.onopen = () => {
                 delay = 1000
-                setConnected(true)
                 ping = window.setInterval(() => current.send("ping"), PING_MS)
             }
             current.onmessage = event => {
@@ -96,7 +93,6 @@ export const useImportHost = (getTranscript: () => Transcript, onSent: () => voi
             current.onclose = event => {
                 clearInterval(ping)
                 socket = null
-                setConnected(false)
                 // Another tab with this ID (a duplicated tab) took over. Wait until this one is looked at again.
                 if (event.code === REPLACED) return
                 retry = window.setTimeout(connect, delay)
@@ -114,7 +110,7 @@ export const useImportHost = (getTranscript: () => Transcript, onSent: () => voi
         }
     }, [id])
 
-    return connected ? id : null
+    return id
 }
 
 /** Asks the device showing the barcode for its grades, right now. */

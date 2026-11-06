@@ -43,7 +43,7 @@ export const ImportDialog = ({ open, onOpenChange, beep, onImport }: ImportDialo
         const found = async (barcode: string) => {
             const id = parseImportBarcode(barcode)
             if (!id) {
-                setHint("That's an older receipt barcode. Ask for the one ending in a code like NUS-K7Q9XM2A.")
+                setHint("That isn't a GPA Buy What receipt barcode. Look for one like NUS-K7Q9XM2A.")
                 return false
             }
             stop()

@@ -542,7 +542,7 @@ const Calculator = () => {
                     data={calculationData}
                     credits={calculationData.totalCredits + creditsIn(allModules)}
                     gpa={resultGPA}
-                    barcode={importId && importBarcode(systemIndex, importId)}
+                    barcode={importBarcode(systemIndex, importId)}
                     prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}
                 />
             </main>
