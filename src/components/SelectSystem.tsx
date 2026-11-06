@@ -13,7 +13,7 @@ export const SelectSystem = ({ index, setIndex }: SelectSystemProps) => (
         value={String(index)}
         onValueChange={value => {
             setIndex(Number(value))
-            trackSystemSelected(Number(value))
+            trackSystemSelected(SYSTEMS[Number(value)].name)
         }}>
         <TabsList
             aria-label="Grading system"

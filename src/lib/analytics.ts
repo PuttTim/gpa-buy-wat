@@ -12,11 +12,7 @@ export const initAnalytics = () => {
     })
 }
 
-export const trackSystemSelected = (index: number) => {
+export const trackSystemSelected = (system: string) => {
     if (!enabled) return
-    ReactGA.event({
-        category: "Click",
-        action: "select_system",
-        value: index,
-    })
+    ReactGA.event("select_system", { system })
 }
