@@ -60,7 +60,7 @@ const sanitizeSemester = (raw: any, systemIndex: number): Semester => ({
         : [],
 })
 
-const sanitizeData = (raw: any, systemIndex: number): CalculationData => {
+export const sanitizeData = (raw: any, systemIndex: number): CalculationData => {
     if (!Array.isArray(raw?.semesters)) return createCalculationData(systemIndex)
     return {
         currentGPA: toGPA(raw.currentGPA, SYSTEMS[systemIndex].maxGPA),
