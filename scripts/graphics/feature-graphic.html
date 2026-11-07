@@ -1,0 +1,144 @@
+<!doctype html>
+<!-- Source for docs/feature-graphic.png (2400x1600, rendered at 2x). Render with: node scripts/render-graphics.ts -->
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+    @font-face { font-family: Inter-ish; font-weight: 500; src: url(../../node_modules/@fontsource/manrope/files/manrope-latin-500-normal.woff2); }
+
+    * { box-sizing: border-box; margin: 0; }
+    html, body { width: 1200px; height: 800px; overflow: hidden; background: transparent; }
+
+    .card {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 22px;
+        background:
+            radial-gradient(ellipse 70% 55% at 45% -8%, #3c4194 0%, #2a2a6e 38%, transparent 75%),
+            linear-gradient(180deg, #1c1a45 0%, #120e26 55%, #0d0a1c 100%);
+    }
+
+    /* Browser window holding the desktop screenshot. */
+    .browser {
+        position: absolute;
+        left: 57px;
+        top: 56px;
+        width: 993px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #1e1e24;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 30px 60px rgba(0, 0, 0, 0.45);
+    }
+    .toolbar {
+        position: relative;
+        height: 33px;
+        display: flex;
+        align-items: center;
+        color: #8e8e96;
+    }
+    .lights { display: flex; gap: 6px; margin-left: 12px; }
+    .lights i { width: 9px; height: 9px; border-radius: 50%; }
+    .toolbar svg { position: absolute; top: 50%; width: 13px; height: 13px; transform: translateY(-50%); }
+    .url {
+        position: absolute;
+        left: 50%;
+        top: 5px;
+        width: 320px;
+        height: 22px;
+        transform: translateX(-50%);
+        border-radius: 6px;
+        background: #0e0e12;
+        color: #d5d5db;
+        font: 500 9.5px Inter-ish, -apple-system, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    .url svg { position: static; transform: none; width: 8px; height: 8px; }
+    .url .reload { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 9px; height: 9px; }
+    .browser > img { display: block; width: 100%; }
+
+    /* Phone holding the mobile screenshot. */
+    .phone {
+        position: absolute;
+        left: 902px;
+        top: 214px;
+        width: 248px;
+        height: 530px;
+        padding: 3px;
+        border-radius: 46px;
+        background: linear-gradient(135deg, #e8e8ec 0%, #9a9aa3 30%, #d6d6dc 55%, #7f7f88 80%, #c9c9cf 100%);
+        transform: perspective(2600px) rotateY(-8deg) rotateX(3deg) rotateZ(12deg);
+        box-shadow: -18px 30px 60px rgba(0, 0, 0, 0.55);
+    }
+    .phone::before, .phone::after {
+        content: "";
+        position: absolute;
+        left: -3px;
+        width: 4px;
+        border-radius: 2px 0 0 2px;
+        background: linear-gradient(90deg, #8a8a92, #c8c8ce);
+    }
+    .phone::before { top: 124px; height: 38px; }
+    .phone::after { top: 170px; height: 38px; }
+    .bezel { width: 100%; height: 100%; padding: 7px; border-radius: 43px; background: #0b0b0d; }
+    .screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 36px; background: #efedf7; }
+    .screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .island {
+        position: absolute;
+        left: 50%;
+        top: 8px;
+        width: 68px;
+        height: 20px;
+        transform: translateX(-50%);
+        border-radius: 10px;
+        background: #000;
+    }
+
+    .sprite {
+        position: absolute;
+        image-rendering: pixelated;
+        filter: drop-shadow(8px 8px 0 rgba(0, 0, 0, 0.35));
+    }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="browser">
+        <div class="toolbar">
+            <div class="lights"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+            <svg style="left: 70px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M9 4v16" /></svg>
+            <svg style="left: 104px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+            <svg style="left: 128px; opacity: 0.45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+            <div class="url">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10V8a5 5 0 0 1 10 0v2h1.5v12h-13V10zm2.5 0h5V8a2.5 2.5 0 0 0-5 0z" /></svg>
+                gpabuywhat.com
+                <svg class="reload" viewBox="0 0 24 24" fill="none" stroke="#8e8e96" stroke-width="2.6" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" /></svg>
+            </div>
+            <svg style="right: 128px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v9M8 12l4 4 4-4" /></svg>
+            <svg style="right: 96px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4M6 11v10h12V11" /></svg>
+            <svg style="right: 64px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            <svg style="right: 32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="7" width="13" height="13" rx="2.5" /><path d="M8 4h10.5A2.5 2.5 0 0 1 21 6.5V16" /></svg>
+        </div>
+        <img src="../../docs/screenshot-desktop.png" alt="" />
+    </div>
+
+    <img class="sprite" src="../../public/food/ice.png" style="left: 4px; top: 74px; width: 132px; transform: rotate(-12deg)" alt="" />
+    <img class="sprite" src="../../public/food/mcspicy.png" style="left: 984px; top: 84px; width: 128px; transform: rotate(10deg)" alt="" />
+    <img class="sprite" src="../../public/food/bubble-tea.png" style="left: 58px; top: 578px; width: 124px; transform: rotate(-8deg)" alt="" />
+    <img class="sprite" src="../../public/food/nasi-lemak.png" style="left: 612px; top: 640px; width: 124px; transform: rotate(-9deg)" alt="" />
+    <img class="sprite" src="../../public/food/chicken-rice.png" style="left: 736px; top: 660px; width: 124px; transform: rotate(7deg)" alt="" />
+
+    <div class="phone">
+        <div class="bezel">
+            <div class="screen">
+                <img src="../../docs/screenshot-mobile.png" alt="" />
+                <div class="island"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

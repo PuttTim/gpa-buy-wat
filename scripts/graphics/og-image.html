@@ -1,0 +1,145 @@
+<!doctype html>
+<!-- Source for public/og-image.png (1200x630). Render with: node scripts/render-graphics.ts -->
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+    @font-face { font-family: Monocraft; src: url(../../public/fonts/Monocraft.woff2); }
+    @font-face { font-family: Manrope; font-weight: 500; src: url(../../node_modules/@fontsource/manrope/files/manrope-latin-500-normal.woff2); }
+
+    :root {
+        --ink: #2b1b5c;
+        --paper: #f7f5ee;
+        --paper-ink: #26242f;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { width: 1200px; height: 630px; overflow: hidden; }
+    body {
+        position: relative;
+        background: linear-gradient(160deg, #d4c6fd 0%, #c6b4fa 45%, #b49ef6 100%);
+        font-family: Monocraft, monospace;
+        color: var(--ink);
+    }
+
+    .receipt {
+        position: absolute;
+        left: 112px;
+        top: -24px;
+        width: 318px;
+        padding: 46px 22px 22px;
+        background: var(--paper);
+        color: var(--paper-ink);
+        transform: rotate(-3deg);
+        transform-origin: top center;
+        filter: drop-shadow(0 18px 30px rgba(43, 27, 92, 0.22));
+    }
+    .receipt::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -12px;
+        height: 12px;
+        background:
+            linear-gradient(-45deg, transparent 8px, var(--paper) 0) 0 0 / 16px 12px repeat-x,
+            linear-gradient(45deg, transparent 8px, var(--paper) 0) 0 0 / 16px 12px repeat-x;
+    }
+    .badge {
+        display: grid;
+        place-items: center;
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 20px;
+        border-radius: 18px;
+        background: #c9b7fb;
+        box-shadow: inset 0 0 0 3px #d9cdfd;
+    }
+    .badge img { width: 64px; height: 64px; image-rendering: pixelated; }
+    .rule { border-top: 2px dashed #8f8a99; }
+    .row { display: flex; justify-content: space-between; font-size: 18px; line-height: 32px; }
+    .rows { padding: 10px 2px 8px; }
+    .total {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 2px 8px;
+        font-size: 23px;
+        border-bottom: 6px double #45424f;
+    }
+    .food { display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+    .food img { width: 88px; height: 88px; image-rendering: pixelated; }
+    .food .label { margin-top: 12px; font-size: 18px; }
+    .food .name { margin-top: 6px; font-size: 24px; }
+    .barcode { display: flex; height: 58px; gap: 0; margin-top: 18px; }
+    .barcode span { background: var(--paper-ink); height: 100%; }
+
+    .sprite {
+        position: absolute;
+        image-rendering: pixelated;
+        filter: drop-shadow(6px 6px 0 rgba(43, 27, 92, 0.28));
+    }
+
+    .title {
+        position: absolute;
+        left: 556px;
+        top: 160px;
+        font-size: 104px;
+        line-height: 112px;
+        letter-spacing: 6px;
+    }
+    .divider {
+        position: absolute;
+        left: 560px;
+        top: 410px;
+        width: 560px;
+        border-top: 2px dashed rgba(43, 27, 92, 0.45);
+    }
+    .tagline {
+        position: absolute;
+        left: 560px;
+        top: 438px;
+        font-family: Manrope, sans-serif;
+        font-weight: 500;
+        font-size: 29px;
+    }
+</style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="badge"><img src="../../public/favicon.svg" alt="" /></div>
+        <div class="rule"></div>
+        <div class="rows">
+            <div class="row"><span>SO FAR</span><span>3.62</span></div>
+            <div class="row"><span>Y2S1</span><span>3.80</span></div>
+        </div>
+        <div class="rule"></div>
+        <div class="total"><span>TOTAL GPA</span><span>3.67</span></div>
+        <div class="food">
+            <img src="../../public/food/chicken-rice.png" alt="" />
+            <div class="label">YOU CAN BUY</div>
+            <div class="name">CHICKEN RICE</div>
+        </div>
+        <div class="barcode" id="barcode"></div>
+    </div>
+
+    <img class="sprite" src="../../public/food/ice.png" style="left: 18px; top: 22px; width: 120px; transform: rotate(-10deg)" alt="" />
+    <img class="sprite" src="../../public/food/mcspicy.png" style="left: 392px; top: 40px; width: 124px; transform: rotate(10deg)" alt="" />
+    <img class="sprite" src="../../public/food/bubble-tea.png" style="left: 28px; top: 300px; width: 112px; transform: rotate(-7deg)" alt="" />
+    <img class="sprite" src="../../public/food/nasi-lemak.png" style="left: 424px; top: 456px; width: 116px; transform: rotate(9deg)" alt="" />
+
+    <div class="title">GPA BUY<br />WHAT?</div>
+    <div class="divider"></div>
+    <div class="tagline">Calculate your GPA. See what it can buy.</div>
+
+    <script>
+        // A fixed, decorative barcode so every render is identical.
+        const widths = [3,1,2,1,1,3,2,1,1,2,3,1,1,1,2,2,1,3,1,1,2,1,3,2,1,1,2,1,1,3,1,2,2,1,1,1,3,1,2,1,1,2,3,1,1,2,1,1,2,3,1,1,2,1,1,3,2,1,2,1]
+        const el = document.getElementById("barcode")
+        widths.forEach((w, i) => {
+            const bar = document.createElement("span")
+            bar.style.width = `${w * 2}px`
+            if (i % 2) bar.style.background = "transparent"
+            el.appendChild(bar)
+        })
+    </script>
+</body>
+</html>
