@@ -108,13 +108,16 @@ const Calculator = () => {
         startOverToast.current = null
         history.replaceState(null, "", systemPath(transcript.systemIndex))
         document.title = pageTitleFor(systemPath(transcript.systemIndex))
+        const index = transcript.systemIndex
+        const previous = state.systems[index]
         setState(current => ({
-            systemIndex: transcript.systemIndex,
-            systems: current.systems.map((data, i) =>
-                i === transcript.systemIndex ? transcript.data : data,
-            ),
+            systemIndex: index,
+            systems: current.systems.map((data, i) => (i === index ? transcript.data : data)),
         }))
-        toast(message)
+        // Nothing asks first, so a wrong scan or paste can be taken back.
+        toast(message, {
+            action: { label: "Undo", onClick: () => replaceSystem(index, () => previous) },
+        })
     }
 
     const replaceSystem = (index: number, update: Update) => {
@@ -298,9 +301,13 @@ const Calculator = () => {
                         open={scanning}
                         onOpenChange={setScanning}
                         beep={beep}
-                        onCopy={transcript =>
-                            loadTranscript(transcript, `Copied into ${SYSTEMS[transcript.systemIndex].name}`)
-                        }
+                        onCopy={transcript => {
+                            const count = transcript.data.semesters.flatMap(semester => semester.modules).length
+                            loadTranscript(
+                                transcript,
+                                `Copied ${count} ${count === 1 ? "module" : "modules"} into ${SYSTEMS[transcript.systemIndex].name}`,
+                            )
+                        }}
                     />
                     <ImportDialog
                         open={importing}

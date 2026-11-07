@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
-import { calculateGPA } from "@/lib/calculation"
 import { getDetector, openCamera } from "@/lib/scanner"
 import { sanitizeData } from "@/lib/storage"
 import { SYSTEMS } from "@/lib/systems"
@@ -11,7 +10,6 @@ import { parseTransferBarcode, pullTranscript, Transcript } from "@/lib/transfer
 type Step =
     | { kind: "scanning" }
     | { kind: "loading"; barcode: string }
-    | { kind: "confirm"; transcript: Transcript }
     | { kind: "error"; message: string }
 
 interface ScanDialogProps {
@@ -19,6 +17,7 @@ interface ScanDialogProps {
     onOpenChange: (open: boolean) => void
     /** Primed on the tap that opened the dialog, so phones allow it to play. */
     beep: Beep | null
+    /** Called as soon as the grades arrive; the dialog then closes. */
     onCopy: (transcript: Transcript) => void
 }
 
@@ -28,6 +27,14 @@ export const ScanDialog = ({ open, onOpenChange, beep, onCopy }: ScanDialogProps
     const [step, setStep] = useState<Step>({ kind: "scanning" })
     const [hint, setHint] = useState("")
     const video = useRef<HTMLVideoElement>(null)
+    // Read through a ref so a parent re-render doesn't restart the camera.
+    const done = useRef({ open, onCopy, onOpenChange })
+    done.current = { open, onCopy, onOpenChange }
+
+    const reset = () => {
+        setHint("")
+        setStep({ kind: "scanning" })
+    }
 
     useEffect(() => {
         if (!open || step.kind !== "scanning") return
@@ -54,7 +61,11 @@ export const ScanDialog = ({ open, onOpenChange, beep, onCopy }: ScanDialogProps
                 const raw = await pullTranscript(id)
                 if (!Number.isInteger(raw?.systemIndex) || !SYSTEMS[raw.systemIndex]) throw new Error("This barcode isn't a GPA Buy What transcript.")
                 const transcript = { systemIndex: raw.systemIndex, data: sanitizeData(raw.data, raw.systemIndex) }
-                setStep({ kind: "confirm", transcript })
+                // Closed while waiting: they changed their mind, so don't copy.
+                if (!done.current.open) return true
+                done.current.onCopy(transcript)
+                done.current.onOpenChange(false)
+                reset()
             } catch (error) {
                 setStep({ kind: "error", message: error instanceof Error ? error.message : "Something went wrong." })
             }
@@ -88,11 +99,6 @@ export const ScanDialog = ({ open, onOpenChange, beep, onCopy }: ScanDialogProps
         return stop
     }, [open, step.kind, beep])
 
-    const reset = () => {
-        setHint("")
-        setStep({ kind: "scanning" })
-    }
-
     return (
         <Dialog
             open={open}
@@ -122,17 +128,6 @@ export const ScanDialog = ({ open, onOpenChange, beep, onCopy }: ScanDialogProps
                         Scanned <span className="font-mono">{step.barcode}</span>. Asking that device for its grades...
                     </DialogDescription>
                 )}
-                {step.kind === "confirm" && (
-                    <ConfirmCopy
-                        transcript={step.transcript}
-                        onCancel={() => onOpenChange(false)}
-                        onCopy={() => {
-                            onCopy(step.transcript)
-                            onOpenChange(false)
-                            reset()
-                        }}
-                    />
-                )}
                 {step.kind === "error" && (
                     <>
                         <DialogDescription>{step.message}</DialogDescription>
@@ -141,35 +136,5 @@ export const ScanDialog = ({ open, onOpenChange, beep, onCopy }: ScanDialogProps
                 )}
             </DialogContent>
         </Dialog>
-    )
-}
-
-const ConfirmCopy = ({
-    transcript,
-    onCancel,
-    onCopy,
-}: {
-    transcript: Transcript
-    onCancel: () => void
-    onCopy: () => void
-}) => {
-    const { data } = transcript
-    const system = SYSTEMS[transcript.systemIndex]
-    const modules = data.semesters.flatMap(semester => semester.modules)
-    const gpa = calculateGPA(modules, data.totalCredits, Number(data.currentGPA) || 0)
-    return (
-        <>
-            <DialogDescription>
-                Found {modules.length} {modules.length === 1 ? "module" : "modules"} across{" "}
-                {data.semesters.length} {data.semesters.length === 1 ? "semester" : "semesters"}
-                {gpa === null ? "" : `, GPA ${gpa.toFixed(2)}`}. This replaces everything in your {system.name} tab.
-            </DialogDescription>
-            <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={onCancel}>
-                    Cancel
-                </Button>
-                <Button onClick={onCopy}>Copy grades</Button>
-            </div>
-        </>
     )
 }
