@@ -17,7 +17,7 @@ interface DurableObjectStub {
 
 interface DurableObjectNamespace {
     idFromName(name: string): unknown
-    get(id: unknown): DurableObjectStub
+    get(id: unknown, options?: { locationHint?: string }): DurableObjectStub
 }
 
 interface Ai {

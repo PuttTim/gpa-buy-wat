@@ -9,6 +9,9 @@ export default defineConfig({
         domains: ["gpabuywhat.com", "www.gpabuywhat.com"],
         previewUrls: true,
         observability: { enabled: true },
+        // Run /api/* next to Singapore (AWS ap-southeast-1), where nearly all users are.
+        // Static assets are served from the nearest edge either way.
+        placement: { region: "aws:ap-southeast-1" },
         assets: {
             notFoundHandling: "single-page-application",
             runWorkerFirst: ["/api/*"],

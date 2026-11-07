@@ -29,6 +29,11 @@ const ID_PATTERN = /^[2-9A-HJ-NP-Z]{8}$/
 const PARSE_BUDGET = "parse-budget"
 /** Clairic reads allowed per UTC day, across every user. */
 const PARSE_DAILY_LIMIT = 2000
+/**
+ * Where a new Durable Object is created. Only applies the first time an object is
+ * made; Cloudflare offers regions, not cities, and "apac" includes Singapore.
+ */
+const LOCATION = { locationHint: "apac" }
 
 const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -169,7 +174,7 @@ const parse = async (request: Request, env: Env) => {
     const text = typeof input?.text === "string" ? input.text.slice(0, MAX_TEXT) : ""
     if (!text.trim()) return error(400, "Nothing to read")
     // Last check before spending anything, so bad requests don't use up the budget.
-    const budget = env.IMPORTS.get(env.IMPORTS.idFromName(PARSE_BUDGET))
+    const budget = env.IMPORTS.get(env.IMPORTS.idFromName(PARSE_BUDGET), LOCATION)
     const spent = await budget.fetch(new Request(`https://budget/${PARSE_BUDGET}`, { method: "POST" }))
     // Only a real "spent" blocks. Previews share production's Durable Objects, so they run
     // production's copy of this class, which may not count yet; a hiccup shouldn't block either.
@@ -233,7 +238,7 @@ export default {
         // Browsers send Origin on WebSocket upgrades and POSTs; requiring our own stops other sites.
         if (request.headers.get("origin") !== url.origin) return error(403, "Forbidden")
         const ip = request.headers.get("cf-connecting-ip") ?? "unknown"
-        const stub = env.IMPORTS.get(env.IMPORTS.idFromName(id))
+        const stub = env.IMPORTS.get(env.IMPORTS.idFromName(id), LOCATION)
 
         const isPull = match[2] === "/pull"
         if (!isPull && request.method === "GET" && request.headers.get("upgrade") === "websocket") {
