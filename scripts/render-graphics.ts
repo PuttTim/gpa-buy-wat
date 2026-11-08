@@ -18,8 +18,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const GRAPHICS = [
     // The OG card is served as-is, so it renders at 1x and stays opaque.
     { source: "og-image.html", out: "public/og-image.png", width: 1200, height: 630, scale: 1 },
-    // The README graphic has rounded, transparent corners and renders at 2x.
-    { source: "feature-graphic.html", out: "docs/feature-graphic.png", width: 1200, height: 800, scale: 2 },
+    // The README graphic renders at 2x.
+    { source: "readme-graphic.html", out: "docs/readme-graphic.png", width: 1200, height: 700, scale: 2 },
 ]
 
 const profile = mkdtempSync(join(tmpdir(), "render-graphics-"))

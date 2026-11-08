@@ -15,15 +15,11 @@ interface Tone {
 }
 
 const sine = (phase: number) => Math.sin(2 * Math.PI * phase)
-const triangle = (phase: number) => 1 - 4 * Math.abs(((phase + 0.25) % 1) - 0.5)
 /** A square wave's first two harmonics: a fryer's buzzy piezo without the harsh edge. */
 const piezo = (phase: number) => sine(phase) + sine(3 * phase) / 3
 
-/** A soft checkout beep, a short pause, then a quick classic-scanner beep. */
-const BEEP: Tone[] = [
-    { hz: 1800, seconds: 0.12, wave: sine, level: 0.3, gap: 0.03 },
-    { hz: 2650, seconds: 0.06, wave: triangle, level: 0.24 },
-]
+/** A single soft checkout beep. */
+const BEEP: Tone[] = [{ hz: 1800, seconds: 0.12, wave: sine, level: 0.3 }]
 
 /** One "fries done" burst from a fry-station timer: five quick beeps alternating high and low. */
 const FRIES_DONE: Tone[] = [1500, 1000, 1500, 1000, 1500].map((hz, i, all) => ({
