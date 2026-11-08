@@ -23,8 +23,6 @@ export const createModule = (systemIndex: number): Module => {
 export const createCalculationData = (
     systemIndex: number,
 ): CalculationData => ({
-    currentGPA: "",
-    totalCredits: 0,
     semesters: [{ name: "Semester 1", modules: [createModule(systemIndex)] }],
 })
 
@@ -34,11 +32,6 @@ const toCount = (value: unknown) =>
     typeof value === "number" && Number.isFinite(value) && value > 0
         ? Math.min(value, MAX_CREDITS)
         : 0
-
-const toGPA = (value: unknown, maxGPA: number) => {
-    if (typeof value !== "string" || !/^\d*\.?\d*$/.test(value)) return ""
-    return parseFloat(value) > maxGPA ? String(maxGPA) : value
-}
 
 const sanitizeModule = (raw: any, systemIndex: number): Module => {
     const fallback = createModule(systemIndex)
@@ -63,8 +56,6 @@ const sanitizeSemester = (raw: any, systemIndex: number): Semester => ({
 export const sanitizeData = (raw: any, systemIndex: number): CalculationData => {
     if (!Array.isArray(raw?.semesters)) return createCalculationData(systemIndex)
     return {
-        currentGPA: toGPA(raw.currentGPA, SYSTEMS[systemIndex].maxGPA),
-        totalCredits: toCount(raw.totalCredits),
         semesters: raw.semesters.map((semester: unknown) =>
             sanitizeSemester(semester, systemIndex),
         ),

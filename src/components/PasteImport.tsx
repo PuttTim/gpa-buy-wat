@@ -96,8 +96,6 @@ const Review = ({ systemIndex, semesters, setSemesters, onBack, onImport }: Revi
     const unsure = modules.filter(module => module.unsure).length
 
     const data: CalculationData = {
-        currentGPA: "",
-        totalCredits: 0,
         semesters: semesters
             .filter(semester => semester.modules.length > 0)
             .map(semester => ({

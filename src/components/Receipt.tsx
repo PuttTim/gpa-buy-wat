@@ -56,16 +56,6 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: barc
                     <span className="text-right">Cr</span>
                 </div>
 
-                {data.totalCredits > 0 && (
-                    <div className={`mt-2 ${LINE}`}>
-                        <span className="truncate">So far</span>
-                        <span className="text-right">
-                            {formatGPA(parseFloat(data.currentGPA) || 0)}
-                        </span>
-                        <span className="text-right">{data.totalCredits}</span>
-                    </div>
-                )}
-
                 {data.semesters.map((semester, semesterIndex) => (
                     <div key={semesterIndex} className="mt-2">
                         <div className={LINE}>
@@ -93,9 +83,10 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: barc
                     {food ? (
                         <>
                             <img
+                                key={food.name}
                                 src={food.icon}
                                 alt=""
-                                className="size-24 [image-rendering:pixelated]"
+                                className="pop-in size-24 [image-rendering:pixelated]"
                             />
                             <p>You can buy</p>
                             <p className="text-lg leading-7">{food.name}</p>

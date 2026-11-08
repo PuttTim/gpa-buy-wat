@@ -97,6 +97,7 @@
 
 :root {
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .slide {
@@ -106,6 +107,40 @@
 @media (prefers-reduced-motion: reduce) {
     .slide {
         transition: none;
+    }
+}
+
+/* Entrances for elements that mount already in place. Only put these on
+   something that just appeared, or it also plays on every page load. */
+.pop-in,
+.rise-in {
+    transition:
+        opacity 220ms var(--ease-out),
+        transform 220ms var(--ease-out);
+}
+
+.rise-in {
+    transition-duration: 250ms;
+}
+
+@starting-style {
+    .pop-in {
+        opacity: 0;
+        transform: translateY(6px) scale(0.9);
+    }
+
+    .rise-in {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @starting-style {
+        .pop-in,
+        .rise-in {
+            transform: none;
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 import { CircleHelp, ClipboardPaste, Pencil, ScanBarcode, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import { toast } from "sonner"
 import {
     Accordion,
@@ -8,15 +9,12 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { foodFor } from "@/lib/food"
 import { cn } from "@/lib/utils"
 import { ImportDialog } from "../components/ImportDialog"
 import { MODULE_COLUMNS, ModuleRow } from "../components/ModuleRow"
-import { NumberField } from "../components/NumberField"
 import { Receipt } from "../components/Receipt"
 import { ScanDialog } from "../components/ScanDialog"
 import { SelectSystem } from "../components/SelectSystem"
@@ -28,7 +26,6 @@ import {
     createCalculationData,
     createModule,
     loadState,
-    MAX_CREDITS,
     saveState,
 } from "../lib/storage"
 import { pageTitleFor } from "../lib/pages"
@@ -46,6 +43,9 @@ const insertAt = <T,>(items: T[], index: number, item: T) => [
     item,
     ...items.slice(index),
 ]
+
+// Same curve as --ease-out in index.css.
+const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)"
 
 const HEADER_BUTTON =
     "bg-white/70 text-primary-foreground hover:bg-white/85 hover:text-primary-foreground dark:hover:bg-white/85"
@@ -69,6 +69,9 @@ const Calculator = () => {
 
     const resultRef = useRef<HTMLElement>(null)
 
+    // The semester just added, so only its card animates in.
+    const [addedSemester, setAddedSemester] = useState<number | null>(null)
+
     const [confirmingClear, setConfirmingClear] = useState(false)
     const [saved, setSaved] = useState(true)
     useEffect(() => setSaved(saveState(state)), [state])
@@ -85,6 +88,7 @@ const Calculator = () => {
     const [beep, setBeep] = useState<Beep | null>(null)
     const selectSystem = (index: number) => {
         setFocusModule(null)
+        setAddedSemester(null)
         setRenaming(null)
         history.replaceState(null, "", systemPath(index))
         document.title = pageTitleFor(systemPath(index))
@@ -103,6 +107,7 @@ const Calculator = () => {
     /** Replaces one system's tab with incoming grades and switches to it. */
     const loadTranscript = (transcript: Transcript, message: string) => {
         setFocusModule(null)
+        setAddedSemester(null)
         setRenaming(null)
         toast.dismiss()
         startOverToast.current = null
@@ -179,6 +184,7 @@ const Calculator = () => {
     const addSemester = () => {
         const count = calculationData.semesters.length
         setFocusModule({ semesterIndex: count, moduleIndex: 0 })
+        setAddedSemester(count)
         updateData(data => ({
             ...data,
             semesters: [
@@ -202,6 +208,7 @@ const Calculator = () => {
     const removeWithUndo = (message: string, remove: Update, restore: Update) => {
         const index = systemIndex
         setFocusModule(null)
+        setAddedSemester(null)
         setRenaming(null)
         toast.dismiss()
         startOverToast.current = null
@@ -238,9 +245,9 @@ const Calculator = () => {
         )
     }
 
-    const deleteSemester = (semesterIndex: number) => {
+    const deleteSemester = (semesterIndex: number, card: HTMLElement | null) => {
         const semester = calculationData.semesters[semesterIndex]
-        removeWithUndo(
+        const remove = () => removeWithUndo(
             `Deleted ${semester.name}`,
             data => ({
                 ...data,
@@ -251,6 +258,59 @@ const Calculator = () => {
                 semesters: insertAt(data.semesters, semesterIndex, semester),
             }),
         )
+        const list = card?.parentElement
+        if (!card || !list) return remove()
+
+        // The semester goes at once, so the receipt updates on the click. A copy of
+        // the card fades where it was while everything below slides up into the gap.
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
+        const cards = () => [...list.querySelectorAll<HTMLElement>(':scope > [data-slot="accordion-item"]')]
+        const below = (fromIndex: number) => {
+            const following: HTMLElement[] = []
+            for (let next = list.nextElementSibling; next; next = next.nextElementSibling) {
+                following.push(next as HTMLElement)
+            }
+            return [...cards().slice(fromIndex), ...following]
+        }
+        const ghost = card.cloneNode(true) as HTMLElement
+        ghost.removeAttribute("data-slot")
+        ghost.setAttribute("aria-hidden", "true")
+        ghost.inert = true
+        Object.assign(ghost.style, {
+            position: "absolute",
+            top: `${card.offsetTop}px`,
+            left: `${card.offsetLeft}px`,
+            width: `${card.offsetWidth}px`,
+            pointerEvents: "none",
+        })
+        // Cards are keyed by index, so after the removal each element below holds
+        // the semester that used to be one further down.
+        const before = below(semesterIndex + 1).map(element => element.getBoundingClientRect().top)
+
+        flushSync(remove)
+
+        // First in the list, so the cards sliding up over it paint on top.
+        list.prepend(ghost)
+        ghost
+            .animate(
+                reduce
+                    ? [{ opacity: 1 }, { opacity: 0 }]
+                    : [
+                          { opacity: 1, transform: "scale(1)" },
+                          { opacity: 0, transform: "scale(0.98)" },
+                      ],
+                { duration: 150, easing: EASE_OUT, fill: "forwards" },
+            )
+            .finished.finally(() => ghost.remove())
+        if (reduce) return
+        below(semesterIndex).forEach((element, i) => {
+            const offset = before[i] - element.getBoundingClientRect().top
+            if (!offset) return
+            element.animate(
+                [{ transform: `translateY(${offset}px)` }, { transform: "translateY(0)" }],
+                { duration: 250, easing: EASE_OUT },
+            )
+        })
     }
 
     const startOver = () => {
@@ -263,11 +323,7 @@ const Calculator = () => {
     }
 
     const allModules = calculationData.semesters.flatMap(s => s.modules)
-    const rawGPA = calculateGPA(
-        allModules,
-        calculationData.totalCredits,
-        parseFloat(calculationData.currentGPA) || 0,
-    )
+    const rawGPA = calculateGPA(allModules)
     // Cap only the cumulative result: SMU A+ still contributes 4.3 points.
     const resultGPA = rawGPA === null ? null : Math.min(rawGPA, system.maxGPA)
 
@@ -322,62 +378,16 @@ const Calculator = () => {
             <div className="m-auto max-w-[1100px] px-4 pt-4 lg:px-6 lg:pt-6">
             <main className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
                 <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
-                    <div className="-mb-2 lg:-mb-3">
-                        <h2 className="font-mono text-base uppercase">So far</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Your GPA and credits from past semesters
-                        </p>
-                    </div>
-                    <Card>
-                        <CardContent className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="current-gpa" className="mb-1.5">
-                                    GPA
-                                </Label>
-                                <NumberField
-                                    id="current-gpa"
-                                    placeholder={`Up to ${system.maxGPA.toFixed(2)}`}
-                                    decimals
-                                    max={system.maxGPA}
-                                    value={calculationData.currentGPA}
-                                    onChange={currentGPA =>
-                                        updateData(data => ({ ...data, currentGPA }))
-                                    }
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="total-credits" className="mb-1.5">
-                                    Credits
-                                </Label>
-                                <NumberField
-                                    id="total-credits"
-                                    placeholder="0"
-                                    max={MAX_CREDITS}
-                                    value={
-                                        calculationData.totalCredits
-                                            ? String(calculationData.totalCredits)
-                                            : ""
-                                    }
-                                    onChange={value =>
-                                        updateData(data => ({
-                                            ...data,
-                                            totalCredits: parseInt(value) || 0,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="-mb-2 mt-2 flex items-center gap-2 lg:-mb-3">
-                        <h2 className="font-mono text-base uppercase">Your order</h2>
+                    {/* As tall as the Scan and Import buttons, so the first semester lines up with the receipt. */}
+                    <div className="-mb-2 flex items-center gap-2 lg:h-10">
+                        <h2 className="font-mono text-lg uppercase lg:text-xl">Your order</h2>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <button
                                     type="button"
                                     aria-label="Grading help"
                                     className="rounded text-muted-foreground hover:text-foreground">
-                                    <CircleHelp className="size-4" />
+                                    <CircleHelp className="size-5" />
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent align="start" className="max-w-[calc(100vw-2rem)] text-sm">
@@ -387,7 +397,7 @@ const Calculator = () => {
                     </div>
                     <Accordion
                         type="multiple"
-                        className="gap-4 lg:gap-6"
+                        className="relative gap-4 lg:gap-6"
                         value={calculationData.semesters.flatMap((semester, i) =>
                             semester.collapsed ? [] : [String(i)],
                         )}
@@ -404,7 +414,10 @@ const Calculator = () => {
                             <AccordionItem
                                 key={semesterIndex}
                                 value={String(semesterIndex)}
-                                className="rounded-xl bg-card p-4 ring-1 ring-foreground/10 not-last:border-b-0">
+                                className={cn(
+                                    "rounded-xl bg-card p-4 ring-1 ring-foreground/10 not-last:border-b-0",
+                                    semesterIndex === addedSemester && "rise-in",
+                                )}>
                                 <div className="flex items-center gap-1">
                                     {renaming?.index === semesterIndex ? (
                                         <Input
@@ -453,7 +466,14 @@ const Calculator = () => {
                                                 size="icon"
                                                 className="text-muted-foreground hover:text-destructive"
                                                 aria-label={`Delete ${semester.name}`}
-                                                onClick={() => deleteSemester(semesterIndex)}>
+                                                onClick={e =>
+                                                    deleteSemester(
+                                                        semesterIndex,
+                                                        e.currentTarget.closest<HTMLElement>(
+                                                            '[data-slot="accordion-item"]',
+                                                        ),
+                                                    )
+                                                }>
                                                 <Trash2 />
                                             </Button>
                                         </>
@@ -552,9 +572,10 @@ const Calculator = () => {
                         <span className="flex min-w-0 items-center gap-2">
                             {barFood && (
                                 <img
+                                    key={barFood.name}
                                     src={barFood.icon}
                                     alt=""
-                                    className="size-8 shrink-0 [image-rendering:pixelated]"
+                                    className="pop-in size-8 shrink-0 [image-rendering:pixelated]"
                                 />
                             )}
                             <span className="truncate text-[13px]">
@@ -582,7 +603,7 @@ const Calculator = () => {
                         ref={resultRef}
                         system={system}
                         data={calculationData}
-                        credits={calculationData.totalCredits + creditsIn(allModules)}
+                        credits={creditsIn(allModules)}
                         gpa={resultGPA}
                         barcode={transferBarcode(systemIndex, transferId)}
                         prompt={allModules.length > 0 ? "ADD GPA-GRADED CREDITS" : "ADD A MODULE"}

@@ -51,8 +51,6 @@ const isTranscript = (body: any) =>
     Number.isInteger(body?.systemIndex) &&
     body.systemIndex >= 0 &&
     body.systemIndex < 16 &&
-    isString(body.data?.currentGPA, 16) &&
-    isNumber(body.data?.totalCredits) &&
     Array.isArray(body.data?.semesters) &&
     body.data.semesters.length <= 40 &&
     body.data.semesters.every(
