@@ -5,7 +5,7 @@ import Calculator from "./pages/Calculator"
 
 const App = () => (
     <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange>
-        <div className="flex min-h-dvh flex-col">
+        <div className="flex min-h-dvh flex-col bg-background">
             <div className="flex-1">
                 <Calculator />
             </div>

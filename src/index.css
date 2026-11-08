@@ -98,6 +98,62 @@
 :root {
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    /* Set by EdgeStrips.tsx from what's at the page's edges. These are the fallbacks. */
+    --edge-top-background: var(--background);
+}
+
+/* What Safari's status bar and bottom toolbar take their colour from. The
+   bottom always matches the page, whatever is scrolling past it. */
+.edge-top,
+.edge-bottom {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.edge-top {
+    top: 0;
+    height: max(12px, env(safe-area-inset-top));
+}
+
+.edge-bottom {
+    bottom: 0;
+    height: max(12px, env(safe-area-inset-bottom));
+}
+
+.edge-top::after,
+.edge-bottom::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.edge-top::after {
+    background: var(--edge-top-background);
+}
+
+.edge-bottom::after {
+    background: var(--background);
+}
+
+/* Page gutters that also clear a landscape phone's notch and rounded corners. */
+:root {
+    --gutter-left: max(1rem, env(safe-area-inset-left));
+    --gutter-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 64rem) {
+    :root {
+        --gutter-left: max(1.5rem, env(safe-area-inset-left));
+        --gutter-right: max(1.5rem, env(safe-area-inset-right));
+    }
+}
+
+.safe-x {
+    padding-left: var(--gutter-left);
+    padding-right: var(--gutter-right);
 }
 
 .slide {
@@ -221,6 +277,11 @@ html [data-sonner-toaster] {
        shift the page instead. */
     html body[data-scroll-locked] {
         margin-right: 0 !important;
+    }
+    /* The page itself paints --background (App.tsx). html only shows past its
+       edges, so it follows the top strip. */
+    html {
+        background-color: var(--edge-top-background);
     }
     body {
         @apply bg-background text-foreground;

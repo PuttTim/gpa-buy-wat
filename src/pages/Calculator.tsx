@@ -1,4 +1,4 @@
-import { CircleHelp, ClipboardPaste, Pencil, ScanBarcode, Trash2 } from "lucide-react"
+import { CircleHelp, ClipboardPaste, Lock, LockOpen, Pencil, ScanBarcode, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import { toast } from "sonner"
@@ -13,8 +13,10 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { foodFor } from "@/lib/food"
 import { cn } from "@/lib/utils"
+import { EdgeStrips } from "../components/EdgeStrips"
 import { ImportDialog } from "../components/ImportDialog"
-import { MODULE_COLUMNS, ModuleRow } from "../components/ModuleRow"
+import { ModuleList } from "../components/ModuleList"
+import { moduleColumns } from "../components/ModuleRow"
 import { Receipt } from "../components/Receipt"
 import { ScanDialog } from "../components/ScanDialog"
 import { SelectSystem } from "../components/SelectSystem"
@@ -68,6 +70,7 @@ const Calculator = () => {
     } | null>(null)
 
     const resultRef = useRef<HTMLElement>(null)
+
 
     // The semester just added, so only its card animates in.
     const [addedSemester, setAddedSemester] = useState<number | null>(null)
@@ -168,6 +171,13 @@ const Calculator = () => {
                 i === moduleIndex ? { ...module, ...changes } : module,
             ),
         }))
+    }
+
+    const moveModule = (semesterIndex: number, from: number, to: number) => {
+        updateSemester(semesterIndex, semester => {
+            const modules = semester.modules.filter((_, i) => i !== from)
+            return { ...semester, modules: insertAt(modules, to, semester.modules[from]) }
+        })
     }
 
     const addModule = (semesterIndex: number) => {
@@ -331,8 +341,9 @@ const Calculator = () => {
 
     return (
         <>
+            <EdgeStrips />
             <header className="perforated bg-primary pt-[env(safe-area-inset-top,0px)] pb-1 text-primary-foreground">
-                <div className="m-auto grid max-w-[1100px] grid-cols-[1fr_auto_auto] items-center gap-2 px-4 py-3 sm:gap-3 lg:px-6">
+                <div className="m-auto grid max-w-[1100px] grid-cols-[1fr_auto_auto] items-center gap-2 safe-x py-3 sm:gap-3">
                     <div className="flex items-center gap-2.5">
                         <img
                             src="/favicon.svg"
@@ -375,7 +386,7 @@ const Calculator = () => {
                 </div>
             </header>
 
-            <div className="m-auto max-w-[1100px] px-4 pt-4 lg:px-6 lg:pt-6">
+            <div className="safe-x m-auto max-w-[1100px] pt-4 lg:pt-6">
             <main className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-6">
                 <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
                     {/* As tall as the Scan and Import buttons, so the first semester lines up with the receipt. */}
@@ -448,33 +459,50 @@ const Calculator = () => {
                                                     {formatGPA(calculateGPA(semester.modules))}
                                                 </span>
                                             </AccordionTrigger>
+                                            {!semester.locked && (
+                                                <>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-muted-foreground"
+                                                    aria-label={`Rename ${semester.name}`}
+                                                    onClick={() =>
+                                                        setRenaming({
+                                                            index: semesterIndex,
+                                                            name: semester.name,
+                                                        })
+                                                    }>
+                                                    <Pencil />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                    aria-label={`Delete ${semester.name}`}
+                                                    onClick={e =>
+                                                        deleteSemester(
+                                                            semesterIndex,
+                                                            e.currentTarget.closest<HTMLElement>(
+                                                                '[data-slot="accordion-item"]',
+                                                            ),
+                                                        )
+                                                    }>
+                                                    <Trash2 />
+                                                </Button>
+                                                </>
+                                            )}
+                                            {/* Last, so it stays under the pointer when the buttons before it hide. */}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-muted-foreground"
-                                                aria-label={`Rename ${semester.name}`}
-                                                onClick={() =>
-                                                    setRenaming({
-                                                        index: semesterIndex,
-                                                        name: semester.name,
-                                                    })
-                                                }>
-                                                <Pencil />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-muted-foreground hover:text-destructive"
-                                                aria-label={`Delete ${semester.name}`}
-                                                onClick={e =>
-                                                    deleteSemester(
-                                                        semesterIndex,
-                                                        e.currentTarget.closest<HTMLElement>(
-                                                            '[data-slot="accordion-item"]',
-                                                        ),
-                                                    )
-                                                }>
-                                                <Trash2 />
+                                                className={semester.locked ? "text-foreground" : "text-muted-foreground"}
+                                                aria-label={`Lock ${semester.name}`}
+                                                aria-pressed={!!semester.locked}
+                                                onClick={() => {
+                                                    setFocusModule(null)
+                                                    updateSemester(semesterIndex, s => ({ ...s, locked: !s.locked }))
+                                                }}>
+                                                {semester.locked ? <Lock /> : <LockOpen />}
                                             </Button>
                                         </>
                                     )}
@@ -485,40 +513,36 @@ const Calculator = () => {
                                         aria-hidden="true"
                                         className={cn(
                                             "mb-1.5 grid gap-1.5 text-xs font-medium text-muted-foreground sm:gap-2",
-                                            MODULE_COLUMNS,
+                                            moduleColumns(!!semester.locked),
                                         )}>
-                                        <span>Module</span>
+                                        <span className={cn(!semester.locked && "sm:col-start-2")}>Module</span>
                                         <span>Grade</span>
                                         <span>Credits</span>
                                     </div>
-                                    <ul className="flex flex-col gap-2">
-                                        {semester.modules.map((module, moduleIndex) => (
-                                            <ModuleRow
-                                                key={moduleIndex}
-                                                id={`s${semesterIndex}-m${moduleIndex}`}
-                                                module={module}
-                                                grades={system.grades}
-                                                autoFocus={
-                                                    focusModule?.semesterIndex === semesterIndex &&
-                                                    focusModule?.moduleIndex === moduleIndex
-                                                }
-                                                onFocused={() =>
-                                                    focusModule && setFocusModule(null)
-                                                }
-                                                onChange={changes =>
-                                                    updateModule(semesterIndex, moduleIndex, changes)
-                                                }
-                                                onDelete={() =>
-                                                    deleteModule(semesterIndex, moduleIndex)
-                                                }
-                                            />
-                                        ))}
-                                    </ul>
-                                    <Button
-                                        className="mt-4 w-full"
-                                        onClick={() => addModule(semesterIndex)}>
-                                        Add module
-                                    </Button>
+                                    <ModuleList
+                                        id={`s${semesterIndex}`}
+                                        modules={semester.modules}
+                                        grades={system.grades}
+                                        locked={!!semester.locked}
+                                        focusIndex={
+                                            focusModule?.semesterIndex === semesterIndex
+                                                ? focusModule.moduleIndex
+                                                : null
+                                        }
+                                        onFocused={() => focusModule && setFocusModule(null)}
+                                        onChange={(moduleIndex, changes) =>
+                                            updateModule(semesterIndex, moduleIndex, changes)
+                                        }
+                                        onDelete={moduleIndex => deleteModule(semesterIndex, moduleIndex)}
+                                        onMove={(from, to) => moveModule(semesterIndex, from, to)}
+                                    />
+                                    {!semester.locked && (
+                                        <Button
+                                            className="mt-4 w-full"
+                                            onClick={() => addModule(semesterIndex)}>
+                                            Add module
+                                        </Button>
+                                    )}
                                 </AccordionContent>
                             </AccordionItem>
                         ))}
@@ -568,7 +592,7 @@ const Calculator = () => {
                     aria-label="View receipt"
                     onClick={() => resultRef.current?.scrollIntoView({ behavior: "smooth" })}
                     className="receipt-stub-shadow sticky bottom-0 z-10 -mb-[17px] lg:hidden">
-                    <div className="receipt-stub flex items-center justify-between gap-3 bg-paper px-5 pt-4 pb-[max(0.625rem,env(safe-area-inset-bottom))] font-mono text-paper-ink uppercase">
+                    <div className="receipt-stub flex items-center justify-between gap-3 bg-paper px-5 pt-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-mono text-paper-ink uppercase">
                         <span className="flex min-w-0 items-center gap-2">
                             {barFood && (
                                 <img

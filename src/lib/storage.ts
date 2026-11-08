@@ -46,6 +46,7 @@ const sanitizeModule = (raw: any, systemIndex: number): Module => {
 const sanitizeSemester = (raw: any, systemIndex: number): Semester => ({
     name: typeof raw?.name === "string" ? raw.name : "Semester",
     collapsed: raw?.collapsed === true,
+    locked: raw?.locked === true,
     modules: Array.isArray(raw?.modules)
         ? raw.modules.map((module: unknown) =>
               sanitizeModule(module, systemIndex),
