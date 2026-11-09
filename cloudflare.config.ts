@@ -6,7 +6,7 @@ export default defineConfig({
         name: "gpa-buy-wat",
         compatibilityDate: "2026-10-23",
         entrypoint: "./worker/index.ts",
-        domains: ["gpabuywhat.com", "www.gpabuywhat.com"],
+        domains: ["gpabuywhat.com"],
         previewUrls: true,
         observability: { enabled: true },
         // Run /api/* next to Singapore (AWS ap-southeast-1), where nearly all users are.
