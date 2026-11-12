@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { CalculationData } from "@/interfaces/CalculationData"
 import { Grade } from "@/interfaces/Grade"
-import { calculateGPA } from "@/lib/calculation"
+import { calculateCumulativeGPA } from "@/lib/calculation"
 import { ParsedSemester, parseLocally, parseWithAI } from "@/lib/parseGrades"
 import { playFriesDone } from "@/lib/sounds"
 import { SYSTEMS } from "@/lib/systems"
@@ -107,7 +107,7 @@ const Review = ({ systemIndex, semesters, setSemesters, onBack, onImport }: Revi
                 })),
             })),
     }
-    const gpa = calculateGPA(data.semesters.flatMap(semester => semester.modules))
+    const gpa = calculateCumulativeGPA(data.semesters, system.maxGPA)
 
     const update = (si: number, mi: number, change: Partial<ParsedSemester["modules"][number]>) =>
         setSemesters(current =>

@@ -32,7 +32,7 @@ import {
 } from "../lib/storage"
 import { pageTitleFor } from "../lib/pages"
 import { SYSTEMS, systemPath } from "../lib/systems"
-import { calculateGPA, creditsIn } from "../lib/calculation"
+import { calculateCumulativeGPA, calculateGPA, creditsIn } from "../lib/calculation"
 import { Beep, primeBeep } from "../lib/sounds"
 import { Transcript, transferBarcode, useTransferHost } from "../lib/transfer"
 
@@ -333,9 +333,7 @@ const Calculator = () => {
     }
 
     const allModules = calculationData.semesters.flatMap(s => s.modules)
-    const rawGPA = calculateGPA(allModules)
-    // Cap only the cumulative result: SMU A+ still contributes 4.3 points.
-    const resultGPA = rawGPA === null ? null : Math.min(rawGPA, system.maxGPA)
+    const resultGPA = calculateCumulativeGPA(calculationData.semesters, system.maxGPA)
 
     const barFood = resultGPA === null ? null : foodFor(resultGPA)
 
@@ -456,7 +454,7 @@ const Calculator = () => {
                                                     {semester.name}
                                                 </span>
                                                 <span className="shrink-0 font-mono text-base">
-                                                    {formatGPA(calculateGPA(semester.modules))}
+                                                    {formatGPA(calculateGPA(semester.modules, system.maxGPA))}
                                                 </span>
                                             </AccordionTrigger>
                                             {!semester.locked && (

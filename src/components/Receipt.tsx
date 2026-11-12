@@ -61,7 +61,7 @@ export const Receipt = ({ ref, system, data, credits, gpa, prompt, barcode: barc
                         <div className={LINE}>
                             <span className="truncate">{semester.name}</span>
                             <span className="text-right">
-                                {formatGPA(calculateGPA(semester.modules))}
+                                {formatGPA(calculateGPA(semester.modules, system.maxGPA))}
                             </span>
                             <span className="text-right">
                                 {creditsIn(semester.modules)}

@@ -38,7 +38,7 @@ export const SYSTEMS: GradingSystem[] = [
         name: "SMU",
         grades: { ...SmuGrade, Pass: "P", "Fail (ungraded)": "ungraded-fail" },
         defaultGrade: SmuGrade.A, defaultCredits: 1, maxGPA: 4,
-        gradingHelp: "A+ is worth 4.3; cumulative GPA stops at 4.00. Pass (including Exploratory Courses) and ungraded Fail don't affect GPA. For a failure that counts towards GPA, use F.",
+        gradingHelp: "A+ is worth 4.3; each semester GPA is capped at 4.00 before semesters are weighted into cumulative GPA. Pass (including Exploratory Courses) and ungraded Fail don't affect GPA. For a failure that counts towards GPA, use F.",
         pastePlaceholder: "IS111 A\nIS112 B+\nCOR1100: A-",
     },
 ]
